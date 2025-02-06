@@ -12,6 +12,7 @@ import Footer from "./pages/Footer";
 import UpdateFaculty from "./pages/UpdateFaculty";
 import UpdateSubject from "./pages/UpdateSubject";
 import AdminLogin from "./pages/AdminLogin";
+import StudentLogin from "./pages/StudentLogin";
 import ProtectedRoute from "./context/ProtectedRoute";
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -38,17 +39,44 @@ function MainContent() {
               <AdminLogin />
           </ProtectedRoute>
           } ></Route>
-        <Route path="/sfmap" element={<FacultySubject />} />
-        <Route path="/subjects" element={<SubjectTable />} />
-        <Route path="/addSubjects" element={<Subjects />} />
-        <Route path="/faculty"Login element={
-            <ProtectedRoute roles = {['student']}>
-              <Faculty />
+          <Route path="/updateSubject/:id"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <UpdateSubject />
           </ProtectedRoute>
           } ></Route>
-        <Route path="/addFaculty" element={<AFaculty />} />
-        <Route path="/updateFaculty/:id" element={<UpdateFaculty />} />
-        <Route path="/updateSubject/:id" element={<UpdateSubject />} />
+          <Route path="/sfmap"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <FacultySubject />
+          </ProtectedRoute>
+          } ></Route>
+          <Route path="/subjects"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <SubjectTable />
+          </ProtectedRoute>
+          } ></Route>
+          <Route path="/addFaculty"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <AFaculty />
+          </ProtectedRoute>
+          } ></Route>
+          <Route path="/addSubjects"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <Subjects />
+          </ProtectedRoute>
+          } ></Route>
+          <Route path="/updateFaculty/:id"Login element={
+            <ProtectedRoute roles = {['admin']}>
+             <UpdateFaculty />
+          </ProtectedRoute>
+          } ></Route>
+        <Route path="/faculty"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <Faculty />
+          </ProtectedRoute>} ></Route>
+          <Route path="/student"Login element={
+            <ProtectedRoute roles = {['admin','student']}>
+              <StudentLogin/>
+          </ProtectedRoute>} ></Route>
       </Routes>
 
       {location.pathname === "/" && (

@@ -61,7 +61,7 @@ function Login() {
             navigate("/display");
           }
           if (data.user.role === "student") {
-            navigate("/faculty");
+            navigate("/student");
           }
 
           console.log("Success:", data);
