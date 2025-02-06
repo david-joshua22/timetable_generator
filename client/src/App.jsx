@@ -13,6 +13,7 @@ import UpdateFaculty from "./pages/UpdateFaculty";
 import UpdateSubject from "./pages/UpdateSubject";
 import AdminLogin from "./pages/AdminLogin";
 import StudentLogin from "./pages/StudentLogin";
+import FacultyDashboard from "./pages/FacultyDashboard"
 import ProtectedRoute from "./context/ProtectedRoute";
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -76,6 +77,10 @@ function MainContent() {
           <Route path="/student"Login element={
             <ProtectedRoute roles = {['admin','student']}>
               <StudentLogin/>
+          </ProtectedRoute>} ></Route>
+          <Route path="/displayFaculty"Login element={
+            <ProtectedRoute roles = {['admin','faculty']}>
+              <FacultyDashboard/>
           </ProtectedRoute>} ></Route>
       </Routes>
 

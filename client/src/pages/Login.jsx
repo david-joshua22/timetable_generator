@@ -63,6 +63,9 @@ function Login() {
           if (data.user.role === "student") {
             navigate("/student");
           }
+          if (data.user.role === "faculty") {
+            navigate("/displayFaculty");
+          }
 
           console.log("Success:", data);
         } else {
