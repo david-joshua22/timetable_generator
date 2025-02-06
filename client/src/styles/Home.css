@@ -1,0 +1,82 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.background {
+  display: flex;
+  padding-left: 10%;
+  align-items: center;
+  height: 100vh;
+  background-image: url('../assets/Mvgrim.jpg');
+  background-size: cover; 
+  background-position: center; 
+  background-repeat: no-repeat;
+  background-color: #f0f0f0; /* Fallback */
+}
+
+.details {
+  background-color: rgba(239, 237, 237, 0.75);
+  padding: 20px;
+  border-radius: 0.7rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  height: 50%;
+  width: 45%;
+  opacity: 0; /* Initially hidden */
+  animation: fadeIn 1s forwards; /* Fade-in animation */
+  animation-delay: 0.5s; /* Delay to make it smoother */
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1; /* Fade in the element */
+  }
+}
+
+.details h3 {
+  font-size: 3rem;
+}
+
+.details p {
+  font-size: 1.8rem;
+}
+
+.pad {
+  padding-right: 30px;
+}
+
+.text {
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  background-color: rgba(251, 251, 251, 0.759);
+  padding: 4px 7px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pad a:hover {
+  background-color: #000;
+  color: #fff;
+}
+
+.text:focus {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+
+/* Media query for smaller devices */
+@media (max-width: 768px) {
+  .details {
+    width: 80%;
+    height: auto;
+    padding: 15px;
+  }
+  .details h3 {
+    font-size: 2.5rem;
+  }
+  .details p {
+    font-size: 1.5rem;
+  }
+}

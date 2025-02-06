@@ -1,0 +1,56 @@
+.background-img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row; /* Horizontal layout by default */
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    height: 100vh;
+    background-image: url('../assets/library2.jpg'); /* Replace with your actual image */
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 20px;
+    gap: 20px; /* Spacing between sections */
+  }
+  
+  .about-information,
+  .more-information,
+  .contact-information {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    width: 30%; /* Take up one-third of the width on large screens */
+    max-width: 400px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  
+  .visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 992px) {
+    .background-img {
+      flex-direction: column; /* Stack sections vertically on medium devices */
+    }
+  
+    .about-information,
+    .more-information,
+    .contact-information {
+      width: 90%; /* Full width on smaller screens */
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .about-information,
+    .more-information,
+    .contact-information {
+      width: 95%;
+    }
+  }
+  
