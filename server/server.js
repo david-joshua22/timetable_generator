@@ -3,7 +3,7 @@ import mysql from "mysql";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 
-const SECRET_KEY = 'idontknowwhyiamdoingthisproject';
+const SECRET_KEY = 'AJH7O9q5MHhJbzC5GidFE1fsmVyTnQqU';
 
 const app = express();
 
