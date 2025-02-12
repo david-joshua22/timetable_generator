@@ -38,7 +38,7 @@ function Subjects(){
                 <input type="text" name = "id" placeholder="Enter Subject code" className="form-control" onChange={handleChange} required/>
             </div>
             <div className="mb-3 ">
-            <Form.Select aria-label="Default select example" name = "type" onChange={handleChange} required>
+            <Form.Select aria-label="Default select example" name = "type" onChange={handleChange} className='formSelect' required>
                 <option>Enter Subject type</option>
                 <option value="1">Lecture</option>
                 <option value="2">Lab</option>
@@ -53,6 +53,7 @@ function Subjects(){
                             name="semester"
                             onChange={handleChange}
                             aria-label="Select Semester"
+                            className='formSelect'
                         >
                             <option value="">Select Semester</option>
                             {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
