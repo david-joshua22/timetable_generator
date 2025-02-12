@@ -35,7 +35,7 @@ function Subjects(){
                 <input type="text" name = "name" placeholder="Enter Subject name" className="form-control" onChange={handleChange} required/>
             </div>
             <div className="mb-3 ">
-                <input type="number" name = "id" placeholder="Enter Subject code" className="form-control" onChange={handleChange} required/>
+                <input type="text" name = "id" placeholder="Enter Subject code" className="form-control" onChange={handleChange} required/>
             </div>
             <div className="mb-3 ">
             <Form.Select aria-label="Default select example" name = "type" onChange={handleChange} required>

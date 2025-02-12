@@ -1,21 +1,15 @@
 import express from "express";
-import mysql from "mysql";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import db from './connection.js';
 
 const SECRET_KEY = 'AJH7O9q5MHhJbzC5GidFE1fsmVyTnQqU';
 
 const app = express();
 
 app.use(cors());
-app.use(express.json()); // Enable JSON parsing
+app.use(express.json()); 
 
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "timetable"
-});
 
 app.get('/', (req, res) => {
     return res.json('Hello');

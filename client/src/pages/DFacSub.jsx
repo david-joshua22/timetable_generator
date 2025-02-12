@@ -4,7 +4,7 @@ import Table from 'react-bootstrap/Table';
 
 function DFacSub() {
     const [mappings, setMappings] = useState([]);
-    const section = {1:'A',2:'B',3:'C',4:'D',5:'E'}
+    // const section = {1:'A',2:'B',3:'C',4:'D',5:'E'}
     useEffect(() => {
         fetchMappings();
     }, []);
@@ -48,7 +48,7 @@ function DFacSub() {
                             <tr key={item.id}>
                                 <td>{item.faculty_name}</td>  
                                 <td>{item.subject_name}</td>  
-                                <td>{section[item.section_id]}</td>
+                                <td>{item.section_id}</td>
                                 <td>{item.semester_id}</td>
                                 <td className='d-flex flex-col justify-content-center'>
                                     <div className='p-1'>

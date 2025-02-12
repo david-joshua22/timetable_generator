@@ -94,11 +94,11 @@ function FacultySubject() {
                                 aria-label="Select Class"
                             >
                                 <option value="">Select Class</option>
-                                <option value={1}>A</option>
-                                <option value={2}>B</option>
-                                <option value={3}>C</option>
-                                <option value={4}>D</option>
-                                <option value={5}>E</option>
+                                <option value={'A'}>A</option>
+                                <option value={'B'}>B</option>
+                                <option value={'C'}>C</option>
+                                <option value={'D'}>D</option>
+                                <option value={'E'}>E</option>
                             </Form.Select>
                         </div>
                         <div className='m-3 p-3'>
