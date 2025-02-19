@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import db from './connection.js';
+import getDataAndSchedule from './algo.js';
 
 const SECRET_KEY = 'AJH7O9q5MHhJbzC5GidFE1fsmVyTnQqU';
 
@@ -163,6 +164,29 @@ app.post('/mapSubFac', (req, res) => {
     });
 });
 
+app.post('/labEntry', (req, res) => {
+    console.log("Received lab mapping data:", req.body);
+
+    const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`) VALUES (?)";
+
+    const values = [
+        req.body.semester,
+        req.body.class,
+        req.body.subject,
+        req.body.faculty1,
+        req.body.faculty2
+    ];
+
+    db.query(sql, [values], (err, data) => {
+        if (err) {
+            console.error('Error inserting lab mapping:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log("Lab mapping added successfully");
+        res.json({ message: "Lab mapping added successfully" });
+    });
+});
+
 
 app.get('/getFacSubMap', (req, res) => {
     const sql = `
@@ -200,6 +224,46 @@ app.delete('/deleteFacSubMap/:id', (req, res) => {
         res.json({ message: "Mapping deleted successfully" });
     });
 });
+
+// Fetch lab faculty-subject mappings
+app.get('/getLabFacSubMap', (req, res) => {
+    const sql = `
+        SELECT 
+            flm.id,
+            flm.semester_id, 
+            flm.section_id, 
+            f1.name AS faculty1_name, 
+            f2.name AS faculty2_name, 
+            s.name AS subject_name 
+        FROM faculty_lab_mapping flm
+        JOIN faculty f1 ON flm.faculty_id_A = f1.id
+        JOIN faculty f2 ON flm.faculty_id_B = f2.id
+        JOIN subject s ON flm.subject_id = s.id
+    `;
+
+    db.query(sql, (err, data) => {
+        if (err) {
+            console.error('Error fetching lab mappings:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(data);
+    });
+});
+
+// Delete lab faculty-subject mapping
+app.delete('/deleteLabFacSubMap/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "DELETE FROM faculty_lab_mapping WHERE id = ?";
+    
+    db.query(sql, [id], (err, data) => {
+        if (err) {
+            console.error('Error deleting lab mapping:', err);
+            return res.json({ err: err.message });
+        }
+        res.json({ message: "Lab mapping deleted successfully" });
+    });
+});
+
 
 
 app.post("/login", (req, res) => {
@@ -260,6 +324,12 @@ app.post("/verify-token", (req, res) => {
       res.json({ valid: true, role: decoded.role });
     });
   });
+
+
+  
+  app.get('/generate', (req, res) => {
+    getDataAndSchedule();
+});
 
 
 app.listen(3000, () => {

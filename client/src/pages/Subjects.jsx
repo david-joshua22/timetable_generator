@@ -42,7 +42,7 @@ function Subjects(){
                 <option>Enter Subject type</option>
                 <option value="1">Lecture</option>
                 <option value="2">Lab</option>
-                <option value="3">Seminar</option>
+                <option value="3">Elective</option>
             </Form.Select>
             </div>
             <div className="mb-3 ">

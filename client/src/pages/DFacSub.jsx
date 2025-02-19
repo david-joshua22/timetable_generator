@@ -4,27 +4,40 @@ import Table from 'react-bootstrap/Table';
 
 function DFacSub() {
     const [mappings, setMappings] = useState([]);
-    // const section = {1:'A',2:'B',3:'C',4:'D',5:'E'}
+    const [labMappings, setLabMappings] = useState([]);
+
     useEffect(() => {
         fetchMappings();
+        fetchLabMappings();
     }, []);
 
     const fetchMappings = () => {
         fetch('http://localhost:3000/getFacSubMap')
             .then(response => response.json())
             .then(data => setMappings(data))
-            .catch(error => console.error('Error fetching mappings:', error));
+            .catch(error => console.error('Error fetching regular mappings:', error));
     };
 
-    const handleDelete = (id) => {
+    const fetchLabMappings = () => {
+        fetch('http://localhost:3000/getLabFacSubMap') 
+            .then(response => response.json())
+            .then(data => setLabMappings(data))
+            .catch(error => console.error('Error fetching lab mappings:', error));
+    };
+
+    const handleDelete = (id, isLab) => {
         if (window.confirm('Are you sure you want to delete this mapping?')) {
-            fetch(`http://localhost:3000/deleteFacSubMap/${id}`, {
+            fetch(`http://localhost:3000/${isLab ? 'deleteLabFacSubMap' : 'deleteFacSubMap'}/${id}`, {
                 method: 'DELETE'
             })
             .then(response => response.json())
             .then(data => {
                 console.log('Success:', data);
-                fetchMappings(); // Refresh the list after deletion
+                if (isLab) {
+                    fetchLabMappings(); // Refresh lab mappings
+                } else {
+                    fetchMappings(); // Refresh regular mappings
+                }
             })
             .catch(error => console.error('Error:', error));
         }
@@ -32,7 +45,7 @@ function DFacSub() {
 
     return (
         <div className='d-flex justify-content-center align-items-center pt-3 mt-3'>
-            <div className='w-50 rounded'>
+            <div className='w-75 rounded'>
                 <Table striped bordered hover>
                     <thead>
                         <tr>
@@ -44,15 +57,33 @@ function DFacSub() {
                         </tr>
                     </thead>
                     <tbody>
+                        {/* Regular Subject Mappings */}
                         {mappings.map((item) => (
-                            <tr key={item.id}>
+                            <tr key={`reg-${item.id}`}>
                                 <td>{item.faculty_name}</td>  
                                 <td>{item.subject_name}</td>  
                                 <td>{item.section_id}</td>
                                 <td>{item.semester_id}</td>
                                 <td className='d-flex flex-col justify-content-center'>
                                     <div className='p-1'>
-                                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                                        <Button variant="danger" onClick={() => handleDelete(item.id, false)}>
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+
+                        {/* Lab Subject Mappings */}
+                        {labMappings.map((lab) => (
+                            <tr key={`lab-${lab.id}`}>
+                                <td>{lab.faculty1_name} & {lab.faculty2_name}</td> 
+                                <td>{lab.subject_name} (Lab)</td>  
+                                <td>{lab.section_id}</td>
+                                <td>{lab.semester_id}</td>
+                                <td className='d-flex flex-col justify-content-center'>
+                                    <div className='p-1'>
+                                        <Button variant="danger" onClick={() => handleDelete(lab.id, true)}>
                                             Delete
                                         </Button>
                                     </div>
