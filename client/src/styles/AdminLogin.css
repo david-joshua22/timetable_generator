@@ -133,3 +133,28 @@
   .text-white {
     color: #fff !important;
   }
+
+.timetable-table{
+  border: 2px solid black !important;
+  table-layout: fixed;
+  width: 100%;
+}
+/* Reduce table header size */
+.timetable-table thead th {
+  font-size: 28px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border: 2px solid black !important;
+}
+
+/* Reduce table cell size */
+.timetable-table tbody td {
+  font-size: 18px;
+  padding: 8px;
+  border: 2px solid black !important;
+}
+
+
+.days{
+  font-weight: bold;
+}

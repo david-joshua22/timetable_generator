@@ -187,6 +187,86 @@ app.post('/labEntry', (req, res) => {
     });
 });
 
+app.post('/getTimetable', (req, res) => {
+    const { semester, section } = req.body;
+
+    if (!semester || !section) {
+        return res.status(400).json({ error: "Semester and section are required" });
+    }
+
+    const sql = `SELECT * from timetable as t inner join subject on t.subject_id = subject.id where t.semester_id = ? and section_id = ? order by day,time; `;
+
+    db.query(sql, [semester, section], (err, results) => {
+        if (err) {
+            console.error("Database error:", err); // Log error
+            return res.status(500).json({ error: err.message });
+        }
+        
+        res.json(results);
+    });
+});
+
+app.post('/getFacOfClass', (req, res) => {
+    const { semester, section } = req.body;
+    
+    if (!semester || !section) {
+        return res.status(400).json({ error: "Semester and section are required" });
+    }
+
+    const theoryQuery = `SELECT faculty.name AS faculty_name, subject.name AS subject_name 
+                         FROM fac_sec_map AS fp 
+                         INNER JOIN faculty ON fp.faculty_id = faculty.id 
+                         INNER JOIN subject ON fp.subject_id = subject.id 
+                         WHERE fp.section_id = ? AND fp.semester_id = ?`;
+    
+    const labQuery = `SELECT 
+                        f1.name AS faculty_name_A, 
+                        f2.name AS faculty_name_B, 
+                        subject.name AS subject_name,
+                        fp.subject_id
+                      FROM faculty_lab_mapping AS fp 
+                      INNER JOIN faculty f1 ON fp.faculty_id_A = f1.id 
+                      INNER JOIN faculty f2 ON fp.faculty_id_B = f2.id 
+                      INNER JOIN subject ON fp.subject_id = subject.id 
+                      WHERE fp.section_id = ? AND fp.semester_id = ?`;
+
+    Promise.all([
+        new Promise((resolve, reject) => {
+            db.query(theoryQuery, [section, semester], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        }),
+        new Promise((resolve, reject) => {
+            db.query(labQuery, [section, semester], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        })
+    ])
+    .then(([theoryResults, labResults]) => {
+        // Process theory results
+        const theory = theoryResults.map(item => ({
+            faculty_name: item.faculty_name,
+            subject_name: item.subject_name
+        }));
+        
+        // Process lab results - combine faculty A and B
+        const lab = labResults.map(item => ({
+            faculty_name: `${item.faculty_name_A}, ${item.faculty_name_B}`,
+            subject_name: item.subject_name
+        }));
+        
+        // Combine all results
+        const combinedResults = [...theory, ...lab];
+        res.json(combinedResults);
+    })
+    .catch(err => {
+        console.error("Database error:", err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
 
 app.get('/getFacSubMap', (req, res) => {
     const sql = `
