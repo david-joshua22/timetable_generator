@@ -15,6 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import StudentLogin from "./pages/StudentLogin";
 import FacultyDashboard from "./pages/FacultyDashboard"
 import ProtectedRoute from "./context/ProtectedRoute";
+import Display from "./pages/Display";
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
@@ -35,7 +36,7 @@ function MainContent() {
       <Routes>
         <Route path="/" element={<Home />} /> 
         <Route path="/Login"Login element={<Login />} />
-        <Route path="/display"Login element={
+        <Route path="/admin"Login element={
             <ProtectedRoute roles = {['admin']}>
               <AdminLogin />
           </ProtectedRoute>
@@ -73,6 +74,10 @@ function MainContent() {
         <Route path="/faculty"Login element={
             <ProtectedRoute roles = {['admin']}>
               <Faculty />
+          </ProtectedRoute>} ></Route>
+          <Route path="/display"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <Display />
           </ProtectedRoute>} ></Route>
           <Route path="/student"Login element={
             <ProtectedRoute roles = {['admin','student']}>

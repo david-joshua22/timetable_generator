@@ -206,6 +206,37 @@ app.post('/getTimetable', (req, res) => {
     });
 });
 
+app.post('/getFacultyTimetable', (req, res) => {
+    const { selectedFaculty } = req.body;
+
+    const sql = `SELECT subject.name AS subject_name, faculty.name AS faculty_name, t.* FROM faculty_timetable AS t INNER JOIN subject ON t.subject_id = subject.id INNER JOIN faculty ON t.faculty_id = faculty.id WHERE t.faculty_id = ? ORDER BY t.day, t.time; `;
+
+    db.query(sql, [selectedFaculty], (err, results) => {
+        if (err) {
+            console.error("Database error:", err); // Log error
+            return res.status(500).json({ error: err.message });
+        }
+        
+        res.json(results);
+    });
+});
+
+app.post('/getClassFaculty', (req, res) => {
+    const { selectedFaculty } = req.body;
+
+    const sql = `SELECT DISTINCT t.section_id, t.subject_id, t.semester_id, subject.name AS subject_name, faculty.name AS faculty_name FROM faculty_timetable AS t INNER JOIN subject ON t.subject_id = subject.id INNER JOIN faculty ON t.faculty_id = faculty.id WHERE t.faculty_id = ?`;
+
+    db.query(sql, [selectedFaculty], (err, results) => {
+        if (err) {
+            console.error("Database error:", err); // Log error
+            return res.status(500).json({ error: err.message });
+        }
+        
+        res.json(results);
+    });
+});
+
+
 app.post('/getFacOfClass', (req, res) => {
     const { semester, section } = req.body;
     

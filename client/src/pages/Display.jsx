@@ -1,12 +1,12 @@
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
-import { useState } from 'react';
+import {useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import '../styles/AdminLogin.css';
 
-const StudentDashboard = () => {
+const Display = () => {
 
   const downloadPDF = () => {
     const input = document.getElementById("timetable-container");
@@ -89,12 +89,12 @@ const StudentDashboard = () => {
     };
     return (
       <div className="items-center display-1">
-  <div className="rounded-lg shadow-md mb-6 cardBox">
+  <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
     <div className="timetableHeader">
       <h3>Display TimeTable</h3>
     </div>
 
-    <div className="d-flex justify-content-center mt-3">
+    <div className="d-flex justify-content-center pt-5 pb-3">
       <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto">
         <option>Select Semester</option>
         {[1, 2, 3, 4, 5, 6, 7].map((num) => (
@@ -127,14 +127,14 @@ const StudentDashboard = () => {
                   <tr>
                     <th></th>
                     {[1, 2, 3, 4, 5, 6].map((time) => (
-                      <th key={time}>Period {time}</th>
+                      <th key={time} className='colorChange'>Period {time}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {[1, 2, 3, 4, 5].map((day) => (
                     <tr key={day}>
-                      <td className='days'>{days[day]}</td>
+                      <td className='days colorChange'>{days[day]}</td>
                       {[1, 2, 3, 4, 5, 6].map((time) => {
                         const subject = timetable.find((item) => item.day === day && item.time === time);
                         return <td key={time}>{subject ? subject.name : ""}</td>;
@@ -152,7 +152,7 @@ const StudentDashboard = () => {
                 </thead>
                 <tbody>
                 {faculty.map((item) => (
-                    <tr key={item.id || item.faculty_name}>
+                    <tr key={item.id || item.faculty_name} >
                       <td>{item.faculty_name}</td>
                       <td>{item.subject_name}</td>
                     </tr>
@@ -172,4 +172,4 @@ const StudentDashboard = () => {
     </div>
     )
 };
-export default StudentDashboard;
+export default Display;

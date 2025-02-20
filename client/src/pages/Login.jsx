@@ -58,7 +58,7 @@ function Login() {
           setRole(data.user.role); // Update the role
 
           if (data.user.role === "admin") {
-            navigate("/display");
+            navigate("/admin");
           }
           if (data.user.role === "student") {
             navigate("/student");

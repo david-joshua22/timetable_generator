@@ -143,7 +143,7 @@
 .timetable-table thead th {
   font-size: 28px;
   padding: 8px;
-  background-color: #f8f9fa;
+  background-color: #d2d3d4;
   border: 2px solid black !important;
 }
 
@@ -154,7 +154,14 @@
   border: 2px solid black !important;
 }
 
-
+.colorChange{
+  background-color: #d2d3d4 !important;
+  text-align: center;
+}
 .days{
+  font-weight: bold;
+}
+
+.facultyStyle{
   font-weight: bold;
 }

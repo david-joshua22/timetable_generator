@@ -36,7 +36,7 @@ function Header() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             {localStorage.getItem("role") === 'admin' && (
-              <Nav.Link href="/display">Admin Dashboard</Nav.Link>
+              <Nav.Link href="/admin">Admin Dashboard</Nav.Link>
             )}
           </Nav>
           <Nav className="ms-auto">
