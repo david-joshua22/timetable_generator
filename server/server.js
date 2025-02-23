@@ -299,7 +299,40 @@ app.post('/getFacOfClass', (req, res) => {
 });
 
 
+// Fetch subjects based on the selected semester
+app.get('/getSubjectsBySemester', (req, res) => {
+    const semester = req.query.semester;
+    if (!semester) {
+        return res.status(400).json({ error: 'Semester parameter is required' });
+    }
+
+    const sql = `
+        SELECT 
+            s.id, 
+            s.name, 
+            s.type, 
+            s.semester_id 
+        FROM subject s
+        WHERE s.semester_id = ?;
+    `;
+
+    db.query(sql, [semester], (err, data) => {
+        if (err) {
+            console.error('Error fetching subjects:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(data);
+    });
+});
+
+
+// Fetch faculty-subject mappings based on semester
 app.get('/getFacSubMap', (req, res) => {
+    const semester = req.query.semester;
+    if (!semester) {
+        return res.status(400).json({ error: 'Semester parameter is required' });
+    }
+
     const sql = `
         SELECT 
             fsm.id,
@@ -310,9 +343,10 @@ app.get('/getFacSubMap', (req, res) => {
         FROM fac_sec_map fsm
         JOIN faculty f ON fsm.faculty_id = f.id
         JOIN subject s ON fsm.subject_id = s.id
+        WHERE fsm.semester_id = ?;
     `;
 
-    db.query(sql, (err, data) => {
+    db.query(sql, [semester], (err, data) => {
         if (err) {
             console.error('Error fetching mappings:', err);
             return res.status(500).json({ error: err.message });
@@ -321,12 +355,11 @@ app.get('/getFacSubMap', (req, res) => {
     });
 });
 
-
 // Delete faculty-subject mapping
 app.delete('/deleteFacSubMap/:id', (req, res) => {
     const id = req.params.id;
     const sql = "DELETE FROM fac_sec_map WHERE id = ?";
-    
+
     db.query(sql, [id], (err, data) => {
         if (err) {
             console.error('Error deleting mapping:', err);
@@ -336,8 +369,13 @@ app.delete('/deleteFacSubMap/:id', (req, res) => {
     });
 });
 
-// Fetch lab faculty-subject mappings
+// Fetch lab faculty-subject mappings based on semester
 app.get('/getLabFacSubMap', (req, res) => {
+    const semester = req.query.semester;
+    if (!semester) {
+        return res.status(400).json({ error: 'Semester parameter is required' });
+    }
+
     const sql = `
         SELECT 
             flm.id,
@@ -350,9 +388,10 @@ app.get('/getLabFacSubMap', (req, res) => {
         JOIN faculty f1 ON flm.faculty_id_A = f1.id
         JOIN faculty f2 ON flm.faculty_id_B = f2.id
         JOIN subject s ON flm.subject_id = s.id
+        WHERE flm.semester_id = ?;
     `;
 
-    db.query(sql, (err, data) => {
+    db.query(sql, [semester], (err, data) => {
         if (err) {
             console.error('Error fetching lab mappings:', err);
             return res.status(500).json({ error: err.message });
@@ -365,7 +404,7 @@ app.get('/getLabFacSubMap', (req, res) => {
 app.delete('/deleteLabFacSubMap/:id', (req, res) => {
     const id = req.params.id;
     const sql = "DELETE FROM faculty_lab_mapping WHERE id = ?";
-    
+
     db.query(sql, [id], (err, data) => {
         if (err) {
             console.error('Error deleting lab mapping:', err);
@@ -374,6 +413,7 @@ app.delete('/deleteLabFacSubMap/:id', (req, res) => {
         res.json({ message: "Lab mapping deleted successfully" });
     });
 });
+
 
 
 

@@ -146,15 +146,15 @@ const Display = () => {
               <Table bordered className="mt-4 timetable-table">
               <thead>
                   <tr>
-                    <th>Faculty</th>
                     <th>Subject</th>
+                    <th>Faculty</th>
                   </tr>
                 </thead>
                 <tbody>
                 {faculty.map((item) => (
                     <tr key={item.id || item.faculty_name} >
-                      <td>{item.faculty_name}</td>
                       <td>{item.subject_name}</td>
+                      <td>{item.faculty_name}</td>
                     </tr>
                   ))}
                 </tbody>

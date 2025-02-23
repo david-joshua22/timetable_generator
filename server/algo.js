@@ -36,9 +36,9 @@ async function getDataAndSchedule() {
     }
 }
 function shuffleArray(array) {
-    let shuffled = [...array]; // Create a copy to avoid modifying the original array
+    let shuffled = [...array]; 
     for (let i = shuffled.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1)); // Pick a random index
+        let j = Math.floor(Math.random() * (i + 1)); 
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Swap elements
     }
     return shuffled;
@@ -220,7 +220,9 @@ async function assignLecturePeriod(fac_map) {
         for (let day of shuffledDays) {
             if (check_hours === hours) break; // Exit if all hours are assigned
         
-            let periods = shuffleArray([1,2,3,4,5,6]); // Only considering 2nd and 3rd periods
+            let periods = shuffleArray([2,3,4])
+            periods.splice(0,0,1);
+            periods.push(5,6);
             for (let period of periods) {
                 // Check availability in parallel
                 let [faculty_avail, class_avail] = await Promise.all([

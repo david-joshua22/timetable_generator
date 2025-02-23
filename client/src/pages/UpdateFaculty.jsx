@@ -33,7 +33,6 @@ function UpdateFaculty() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Fix: Corrected URL formation and removed 'id' from the URL
         fetch(`http://localhost:3000/updateFaculty/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

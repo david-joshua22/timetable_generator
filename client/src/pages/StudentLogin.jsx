@@ -146,15 +146,15 @@ const StudentDashboard = () => {
               <Table bordered className="mt-4 timetable-table">
               <thead>
                   <tr>
-                    <th>Faculty</th>
                     <th>Subject</th>
+                    <th>Faculty</th>
                   </tr>
                 </thead>
                 <tbody>
                 {faculty.map((item) => (
                     <tr key={item.id || item.faculty_name}>
-                      <td>{item.faculty_name}</td>
                       <td>{item.subject_name}</td>
+                      <td>{item.faculty_name}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -166,7 +166,7 @@ const StudentDashboard = () => {
                 </Button> 
               </div>
             </div>
-            ) : <div className="text-danger">No timetable available.</div> 
+            ) : <h3 className="text-danger text-center">No timetable available.</h3> 
           )  : null}
       </div>
     </div>

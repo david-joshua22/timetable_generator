@@ -3,6 +3,16 @@ import Card from 'react-bootstrap/Card';
 import '../styles/AdminLogin.css';
 
 const AdminDashboard = () => {
+  function handleGenerate(){
+    fetch("http://localhost:3000/generate")
+    .then(function(){
+      alert('Timetable Generated');
+    })
+    .catch(function(err){
+      console.log(err);
+    })
+  }
+
   return (
     <div className="items-center display-1">  
       <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
@@ -49,7 +59,7 @@ const AdminDashboard = () => {
           <Card className="card4">
             <Card.Body>
               <Card.Title> Generate Timetable </Card.Title>
-              <Button className="btn-dark text-white" href="/display">Generate</Button>
+              <Button className="btn-dark text-white" onClick = {handleGenerate}>Generate</Button>
             </Card.Body>
           </Card>
         </div>

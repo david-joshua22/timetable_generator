@@ -1,11 +1,13 @@
-import Button from 'react-bootstrap/esm/Button';
-import Table from 'react-bootstrap/Table';
-import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Button, Modal, Table } from 'react-bootstrap';
+import { Link} from 'react-router-dom';
+import '../styles/SubjectTable.css';
 
 function SubjectTable() {
     const [subjects, setSubjects] = useState([]);
-    const navigate = useNavigate();
+    const [showDeleteSymbol, setShowDeleteSymbol] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     useEffect(() => {
         fetchSubjects();
@@ -19,8 +21,13 @@ function SubjectTable() {
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this subject?')) {
-            fetch(`http://localhost:3000/deleteSubject/${id}`, {
+        setDeleteId(id);
+        setShowConfirmation(true);
+    };
+
+    const confirmDelete = () => {
+        if (deleteId !== null) {
+            fetch(`http://localhost:3000/deleteSubject/${deleteId}`, {
                 method: 'DELETE'
             })
             .then(response => response.json())
@@ -30,17 +37,26 @@ function SubjectTable() {
             })
             .catch(error => console.error('Error:', error));
         }
-    };
-
-    const handleEdit = (id) => {
-        navigate(`/updateSubject/${id}`);
+        setShowConfirmation(false);
+        setDeleteId(null);
     };
 
     return (
-        <div className='d-flex vh-100 justify-content-center pt-5'>
-            <div className='w-50 rounded'>
-                <Link to="/addSubjects" className="btn btn-success mb-3">Add Subject</Link>
-                <Table striped bordered hover>
+        <div className="subject-container">
+            <div className="subject-card">
+                <div className="subject-actions">
+                    <Link to="/addSubjects" className="bg-black add-subject-btn">
+                        Add Subject
+                    </Link>
+                    <Button
+                        variant="danger"
+                        onClick={() => setShowDeleteSymbol(!showDeleteSymbol)}
+                        className="delete-mode-btn"
+                    >
+                        Delete Mode
+                    </Button>
+                </div>
+                <Table striped bordered hover className="subject-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -48,7 +64,7 @@ function SubjectTable() {
                             <th>Name</th>
                             <th>Subject Type</th>
                             <th>Hours Per Week</th>
-                            <th>Action</th>
+                            {showDeleteSymbol && <th>Delete</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -59,26 +75,42 @@ function SubjectTable() {
                                 <td>{item.name}</td>
                                 <td>
                                     {item.type === '1' ? 'Lecture' : 
-                                     item.type === '2' ? 'Lab' : 
-                                     item.type === '3' ? 'Seminar' : item.type}
+                                    item.type === '2' ? 'Lab' : 
+                                    item.type === '3' ? 'Seminar' : item.type}
                                 </td>
                                 <td>{item.hours_per_week}</td>
-                                <td className='d-flex flex-col justify-content-center'>
-                                    <div className='p-1'>
-                                        <Button variant="warning" onClick={() => handleEdit(item.id)}>
-                                            Edit
+                                {showDeleteSymbol && (
+                                    <td>
+                                        <Button
+                                            variant="danger"
+                                            className="delete-btn"
+                                            onClick={() => handleDelete(item.id)}
+                                        >
+                                            -
                                         </Button>
-                                    </div>
-                                    <div className='p-1'>
-                                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </td>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
                 </Table>
+
+                <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Confirm Deletion</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>Are you sure you want to delete this subject?</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowConfirmation(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete}>
+                            Delete
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </div>
     );

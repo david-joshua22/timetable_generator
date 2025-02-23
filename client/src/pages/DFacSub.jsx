@@ -2,24 +2,28 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/esm/Button';
 import Table from 'react-bootstrap/Table';
 
-function DFacSub() {
+// eslint-disable-next-line react/prop-types
+function DFacSub({ selectedSemester }) {
     const [mappings, setMappings] = useState([]);
     const [labMappings, setLabMappings] = useState([]);
 
     useEffect(() => {
-        fetchMappings();
-        fetchLabMappings();
-    }, []);
+        if (selectedSemester) {
+            fetchMappings();
+            fetchLabMappings();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedSemester]);
 
     const fetchMappings = () => {
-        fetch('http://localhost:3000/getFacSubMap')
+        fetch(`http://localhost:3000/getFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(data => setMappings(data))
             .catch(error => console.error('Error fetching regular mappings:', error));
     };
 
     const fetchLabMappings = () => {
-        fetch('http://localhost:3000/getLabFacSubMap') 
+        fetch(`http://localhost:3000/getLabFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(data => setLabMappings(data))
             .catch(error => console.error('Error fetching lab mappings:', error));
@@ -34,9 +38,9 @@ function DFacSub() {
             .then(data => {
                 console.log('Success:', data);
                 if (isLab) {
-                    fetchLabMappings(); // Refresh lab mappings
+                    fetchLabMappings();
                 } else {
-                    fetchMappings(); // Refresh regular mappings
+                    fetchMappings();
                 }
             })
             .catch(error => console.error('Error:', error));
