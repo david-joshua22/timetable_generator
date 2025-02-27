@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import db from './connection.js';
-import getDataAndSchedule from './algo.js';
+import getDataAndSchedule from './algorithm/algo.js';
 
 const SECRET_KEY = 'AJH7O9q5MHhJbzC5GidFE1fsmVyTnQqU';
 
@@ -21,7 +21,7 @@ app.get('/faculty', (req, res) => {
     db.query(sql, (err, data) => {
         if (err) return res.json({ err: err.message });
         res.json(data);
-        console.log(data);
+        
     });
 });
 
@@ -30,7 +30,7 @@ app.get('/subjects', (req, res) => {
     db.query(sql, (err, data) => {
         if (err) return res.json({ err: err.message });
         res.json(data);
-        console.log(data);
+        
     });
 });
 
@@ -76,13 +76,62 @@ app.delete('/deleteFaculty/:id',(req,res)=>{
     })
 })
 
+app.post('/addElective',(req,res)=>{
+    const sql = "INSERT INTO `elective`(`semester_id`, `elective_id`, `elective_subject_id`, `elective_name`, `elective_section`, `faculty_id`, `hours_per_week`) VALUES (?)";
+    const values = [
+        req.body.semester_id,
+        req.body.elective_id,
+        req.body.elective_subject_id,
+        req.body.elective_name,
+        req.body.elective_section,
+        req.body.faculty_id,
+        req.body.hours_per_week
+    ]
+    db.query(sql, [values], (err, data) => {
+        if (err) return res.json({ err: err.message });
+        console.log("Elective added successfully");
+        res.json({ message: "Elective added successfully" });
+    })
+})
+
+app.get('/getElectiveSections', (req, res) => {
+    const { semester } = req.query;
+    const sql = 'SELECT * FROM elective_semester WHERE semester_id = ?';
+    
+    db.query(sql, [semester], (err, data) => {
+        if (err) return res.json({ err: err.message });
+        res.json(data);
+        
+    });
+});
+
+app.get('/getElectiveId',(req,res)=>{
+    const { semester } = req.query;
+    const sql = 'SELECT * FROM subject WHERE semester_id = ? and type = "Elective" ';
+    
+    db.query(sql, [semester], (err, data) => {
+        if (err) return res.json({ err: err.message });
+        res.json(data);
+        
+    });
+})
+
+app.get('/getElectives',(req,res)=>{
+    const sql = 'SELECT * FROM elective';
+    db.query(sql, (err, data) => {
+        if (err) return res.json({ err: err.message });
+        res.json(data);
+        
+    })
+})
+
 app.get('/viewFaculty/:id',(req,res)=>{
     const id = req.params.id;
     const sql = "SELECT * FROM faculty WHERE id = ?";
     db.query(sql,id, (err, data) => {
         if (err) return res.json({ err: err.message });
         res.json(data);
-        console.log(data);
+        
     });
 })
 
@@ -107,7 +156,7 @@ app.get('/viewSubject/:id', (req, res) => {
     db.query(sql, id, (err, data) => {
         if (err) return res.json({ err: err.message });
         res.json(data);
-        console.log(data);
+        
     });
 });
 
@@ -167,14 +216,15 @@ app.post('/mapSubFac', (req, res) => {
 app.post('/labEntry', (req, res) => {
     console.log("Received lab mapping data:", req.body);
 
-    const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`) VALUES (?)";
+    const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`,`faculty_id_C`) VALUES (?)";
 
     const values = [
         req.body.semester,
         req.body.class,
         req.body.subject,
-        req.body.faculty1,
-        req.body.faculty2
+        req.body.faculty1 || null,
+        req.body.faculty2 || null,
+        req.body.faculty3 && req.body.faculty3 !== 'null' ? req.body.faculty3 : null
     ];
 
     db.query(sql, [values], (err, data) => {
@@ -253,11 +303,13 @@ app.post('/getFacOfClass', (req, res) => {
     const labQuery = `SELECT 
                         f1.name AS faculty_name_A, 
                         f2.name AS faculty_name_B, 
+                        f3.name AS faculty_name_C, 
                         subject.name AS subject_name,
                         fp.subject_id
                       FROM faculty_lab_mapping AS fp 
                       INNER JOIN faculty f1 ON fp.faculty_id_A = f1.id 
                       INNER JOIN faculty f2 ON fp.faculty_id_B = f2.id 
+                      LEFT JOIN faculty f3 ON fp.faculty_id_C = f3.id 
                       INNER JOIN subject ON fp.subject_id = subject.id 
                       WHERE fp.section_id = ? AND fp.semester_id = ?`;
 
@@ -282,9 +334,9 @@ app.post('/getFacOfClass', (req, res) => {
             subject_name: item.subject_name
         }));
         
-        // Process lab results - combine faculty A and B
+        // Process lab results - combine faculty A, B, and C
         const lab = labResults.map(item => ({
-            faculty_name: `${item.faculty_name_A}, ${item.faculty_name_B}`,
+            faculty_name: [item.faculty_name_A, item.faculty_name_B, item.faculty_name_C].filter(Boolean).join(', '),
             subject_name: item.subject_name
         }));
         
@@ -297,6 +349,58 @@ app.post('/getFacOfClass', (req, res) => {
         res.status(500).json({ error: err.message });
     });
 });
+
+
+        app.post('/getElectiveOfClass', (req, res) => {
+            const { semester } = req.body;
+
+            if (!semester) {
+                return res.status(400).json({ error: "Semester is required" });
+            }
+
+            const sql = `
+                SELECT 
+                    elective.elective_id,           
+                    elective.elective_name,         
+                    subject.name AS subject_name,   
+                    elective.elective_section,      
+                    faculty.name AS faculty_name,   
+                    faculty.department              
+                FROM elective
+                JOIN faculty ON elective.faculty_id = faculty.id
+                JOIN subject ON elective.elective_id = subject.id
+                WHERE elective.semester_id = ?
+                ORDER BY elective.elective_id;
+            `;
+
+            db.query(sql, [semester], (err, results) => {
+                if (err) {
+                    console.error('Error fetching elective data:', err);
+                    return res.status(500).json({ error: 'Internal Server Error' });
+                }
+                
+                const mappedData = results.reduce((acc, item) => {
+                    const subjectKey = item.subject_name;
+
+                    if (!acc[subjectKey]) {
+                        acc[subjectKey] = [];
+                    }
+
+                    acc[subjectKey].push({
+                        elective_name: item.elective_name,
+                        elective_section: item.elective_section,
+                        faculty_name: item.faculty_name,
+                        department: item.department
+                    });
+
+                    return acc;
+                }, {});
+
+                res.json(mappedData);
+            });
+        });
+
+
 
 
 // Fetch subjects based on the selected semester
@@ -376,17 +480,21 @@ app.get('/getLabFacSubMap', (req, res) => {
         return res.status(400).json({ error: 'Semester parameter is required' });
     }
 
+    console.log('Fetching lab mappings for semester:', semester);
+
     const sql = `
         SELECT 
             flm.id,
             flm.semester_id, 
             flm.section_id, 
             f1.name AS faculty1_name, 
-            f2.name AS faculty2_name, 
+            f2.name AS faculty2_name,
+            f3.name AS faculty3_name, 
             s.name AS subject_name 
         FROM faculty_lab_mapping flm
         JOIN faculty f1 ON flm.faculty_id_A = f1.id
-        JOIN faculty f2 ON flm.faculty_id_B = f2.id
+        LEFT JOIN faculty f2 ON flm.faculty_id_B = f2.id
+        LEFT JOIN faculty f3 ON flm.faculty_id_C = f3.id
         JOIN subject s ON flm.subject_id = s.id
         WHERE flm.semester_id = ?;
     `;
@@ -396,9 +504,11 @@ app.get('/getLabFacSubMap', (req, res) => {
             console.error('Error fetching lab mappings:', err);
             return res.status(500).json({ error: err.message });
         }
+        console.log('Lab mappings data:', data); // Add this to see the result
         res.json(data);
     });
 });
+
 
 // Delete lab faculty-subject mapping
 app.delete('/deleteLabFacSubMap/:id', (req, res) => {
@@ -479,7 +589,8 @@ app.post("/verify-token", (req, res) => {
 
   
   app.get('/generate', (req, res) => {
-    getDataAndSchedule();
+    let GetSemester = req.query;
+    getDataAndSchedule(GetSemester.semester);
 });
 
 

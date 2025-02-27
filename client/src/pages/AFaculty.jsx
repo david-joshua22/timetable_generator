@@ -80,6 +80,15 @@ function AFaculty() {
                             <option value="">Select Department</option>
                             <option value="CSE">CSE</option>
                             <option value="IT">IT</option>
+                            <option value="CSIT">CSIT</option>
+                            <option value="DE">DE</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="CHEM">CHEM</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="S&H">S&H</option>
+                            <option value="T&P">T&P</option>
                         </Form.Select>
                     </div>
                     <div className="d-flex justify-content-center">

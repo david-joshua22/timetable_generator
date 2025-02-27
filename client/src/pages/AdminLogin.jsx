@@ -3,15 +3,7 @@ import Card from 'react-bootstrap/Card';
 import '../styles/AdminLogin.css';
 
 const AdminDashboard = () => {
-  function handleGenerate(){
-    fetch("http://localhost:3000/generate")
-    .then(function(){
-      alert('Timetable Generated');
-    })
-    .catch(function(err){
-      console.log(err);
-    })
-  }
+  
 
   return (
     <div className="items-center display-1">  
@@ -35,10 +27,24 @@ const AdminDashboard = () => {
             </Card.Body>
           </Card>
 
+          <Card className="card4">
+            <Card.Body>
+              <Card.Title> Add Elective Subject </Card.Title>
+              <Button className="btn-dark text-white" href="/addElective">Add</Button>
+            </Card.Body>
+          </Card>
+
           <Card className="card3">
             <Card.Body>
               <Card.Title> Map Faculty-Subject </Card.Title>
               <Button className="btn-dark text-white" href="/sfmap">Map</Button>
+            </Card.Body>
+          </Card>
+          
+          <Card className="card4">
+            <Card.Body>
+              <Card.Title> Generate Timetable </Card.Title>
+              <Button className="btn-dark text-white" href="/viewMapping">View</Button>
             </Card.Body>
           </Card>
 
@@ -49,19 +55,7 @@ const AdminDashboard = () => {
             </Card.Body>
           </Card>
 
-          <Card className="card4">
-            <Card.Body>
-              <Card.Title> View Faculty Mappings </Card.Title>
-              <Button className="btn-dark text-white" href="/sfmap">View</Button>
-            </Card.Body>
-          </Card>
 
-          <Card className="card4">
-            <Card.Body>
-              <Card.Title> Generate Timetable </Card.Title>
-              <Button className="btn-dark text-white" onClick = {handleGenerate}>Generate</Button>
-            </Card.Body>
-          </Card>
         </div>
 
     </div>

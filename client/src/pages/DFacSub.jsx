@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/esm/Button';
 import Table from 'react-bootstrap/Table';
 
 // eslint-disable-next-line react/prop-types
-function DFacSub({ selectedSemester }) {
+function DFacSub({ selectedSemester, refreshMappings }) {
     const [mappings, setMappings] = useState([]);
     const [labMappings, setLabMappings] = useState([]);
 
@@ -13,7 +13,7 @@ function DFacSub({ selectedSemester }) {
             fetchLabMappings();
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedSemester]);
+    }, [selectedSemester, refreshMappings]);
 
     const fetchMappings = () => {
         fetch(`http://localhost:3000/getFacSubMap?semester=${selectedSemester}`)
@@ -25,7 +25,10 @@ function DFacSub({ selectedSemester }) {
     const fetchLabMappings = () => {
         fetch(`http://localhost:3000/getLabFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
-            .then(data => setLabMappings(data))
+            .then(data => {
+                setLabMappings(data)
+                console.log(data);
+        })
             .catch(error => console.error('Error fetching lab mappings:', error));
     };
 
@@ -78,10 +81,14 @@ function DFacSub({ selectedSemester }) {
                             </tr>
                         ))}
 
-                        {/* Lab Subject Mappings */}
+                       {/* Lab Subject Mappings */}
                         {labMappings.map((lab) => (
                             <tr key={`lab-${lab.id}`}>
-                                <td>{lab.faculty1_name} & {lab.faculty2_name}</td> 
+                                <td>
+                                    {[lab.faculty1_name, lab.faculty2_name, lab.faculty3_name]
+                                        .filter(Boolean)
+                                        .join(' & ')}
+                                </td>
                                 <td>{lab.subject_name} (Lab)</td>  
                                 <td>{lab.section_id}</td>
                                 <td>{lab.semester_id}</td>

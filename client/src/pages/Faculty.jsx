@@ -97,7 +97,7 @@ function Faculty() {
           </Button>
         </div>
 
-        <Table striped bordered hover className="faculty-table">
+        <Table striped bordered hover className="faculty-table table-responsive">
           <thead>
             <tr>
               <th>ID</th>
@@ -172,13 +172,27 @@ function Faculty() {
             </Form.Group>
             <Form.Group controlId="formFacultyDepartment" className="mt-3">
               <Form.Label>Department</Form.Label>
-              <Form.Control
-                type="text"
-                name="department"
-                value={editFaculty.department}
-                onChange={handleEditChange}
-                placeholder="Enter Department"
-              />
+              <Form.Select 
+                            name="department" 
+                            aria-label="Select Department" 
+                            onChange={handleEditChange} 
+                            value={faculty.department} 
+                            className='formSelect'
+                            required
+                        >
+                            <option value="">Select Department</option>
+                            <option value="CSE">CSE</option>
+                            <option value="IT">IT</option>
+                            <option value="CSIT">CSIT</option>
+                            <option value="DE">DE</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="CHEM">CHEM</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="S&H">S&H</option>
+                            <option value="T&P">T&P</option>
+                        </Form.Select>
             </Form.Group>
           </Form>
         </Modal.Body>

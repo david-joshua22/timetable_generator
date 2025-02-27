@@ -6,16 +6,17 @@ import AFaculty from "./pages/AFaculty";
 import FacultySubject from "./pages/FacultySubject";
 import SubjectTable from "./pages/SubjectTable";
 import Subjects from "./pages/Subjects";
+import AddElective from "./pages/AddElective";
 import Login from "./pages/Login"; 
 import About from "./pages/About";
 import Footer from "./pages/Footer";
-import UpdateFaculty from "./pages/UpdateFaculty";
 import UpdateSubject from "./pages/UpdateSubject";
 import AdminLogin from "./pages/AdminLogin";
 import StudentLogin from "./pages/StudentLogin";
 import FacultyDashboard from "./pages/FacultyDashboard"
 import ProtectedRoute from "./context/ProtectedRoute";
 import Display from "./pages/Display";
+import ViewMappings from "./pages/ViewMappings";
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
@@ -51,6 +52,11 @@ function MainContent() {
               <FacultySubject />
           </ProtectedRoute>
           } ></Route>
+          <Route path="/viewMapping"Login element={
+            <ProtectedRoute roles = {['admin']}>
+              <ViewMappings/>
+          </ProtectedRoute>
+          } ></Route>
           <Route path="/subjects"Login element={
             <ProtectedRoute roles = {['admin']}>
               <SubjectTable />
@@ -66,9 +72,9 @@ function MainContent() {
               <Subjects />
           </ProtectedRoute>
           } ></Route>
-          <Route path="/updateFaculty/:id"Login element={
+          <Route path="/addElective"Login element={
             <ProtectedRoute roles = {['admin']}>
-             <UpdateFaculty />
+              <AddElective />
           </ProtectedRoute>
           } ></Route>
         <Route path="/faculty"Login element={
