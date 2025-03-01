@@ -30,7 +30,7 @@ function AFaculty() {
         .then(data => {
             setLoading(false);
             console.log(data);
-            navigate('/faculty');
+            navigate('/admin/faculty');
         })
         .catch(error => {
             setLoading(false);

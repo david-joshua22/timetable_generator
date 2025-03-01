@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import ExcelJS from "exceljs";
 import {saveAs} from 'file-saver';
-import '../styles/AdminLogin.css';
+import '../styles/DisplayTimetable.css';
 
 const Display = () => {
   
@@ -188,18 +188,18 @@ const Display = () => {
       <div className="items-center display-1">
   <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
     <div className="timetableHeader">
-      <h3>Display TimeTable</h3>
+      <h3 className='text-center'>Display TimeTable</h3>
     </div>
 
-    <div className="d-flex justify-content-center pt-5 pb-3">
-      <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto">
+    <div className="d-flex justify-content-center pt-1 pb-3">
+      <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto m-3">
         <option>Select Semester</option>
         {[1, 2, 3, 4, 5, 6, 7].map((num) => (
           <option key={num} value={num}>{num}</option>
         ))}
       </Form.Select>
 
-      <Form.Select onChange={(e) => setSection(e.target.value)} aria-label="Select Section" className="w-auto">
+      <Form.Select onChange={(e) => setSection(e.target.value)} aria-label="Select Section" className="w-auto m-3">
         <option>Select Section</option>
         {['A', 'B', 'C','D','E'].map((sec) => (
           <option key={sec} value={sec}>{sec}</option>
@@ -217,7 +217,7 @@ const Display = () => {
         {showResults ? (
             timetable.length > 0 ?  (
           <div> 
-              <div className="rounded-lg shadow-md mb-6 cardBox" id="timetable-container">
+              <div className="rounded-lg shadow-md mb-6" id="timetable-container">
                 <h1>Time Table CSE -{timetable[0].semester_id} {timetable[0].section_id}</h1>
               <Table bordered ref={tableRef} className="mt-4 timetable-table">
                 <thead>
@@ -275,7 +275,7 @@ const Display = () => {
                                             <tr key={item.id || `${item.faculty_name}-${index}`}>
                                                 <td className='text-uppercase'>{item.elective_section}</td>
                                                 <td className='text-uppercase'>{item.elective_name}</td>
-                                                <td>{item.faculty_name}</td>
+                                                <td>{item.faculty_name} ({item.department})</td>
                                             </tr>
                                         ))}
                                     </tbody>

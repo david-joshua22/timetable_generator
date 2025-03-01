@@ -85,7 +85,7 @@ function Faculty() {
     <div className="faculty-container">
       <div className="faculty-card">
         <div className="faculty-actions">
-          <Link to="/addFaculty" className="add-faculty-btn">
+          <Link to="/admin/addFaculty" className="add-faculty-btn">
             Add Faculty
           </Link>
           <Button

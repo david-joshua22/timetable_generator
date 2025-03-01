@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button, Modal, Table, Form } from 'react-bootstrap';
-import '../styles/SubjectTable.css';
+import '../styles/Container.css';
 
 function AddElective() {
     const [electiveSections, setElectiveSections] = useState([]);

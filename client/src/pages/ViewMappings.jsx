@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import DFacSub from './DFacSub';
 import Button from 'react-bootstrap/Button';
 import '../styles/App.css';
-import '../styles/AdminLogin.css';
+import '../styles/Container.css';
 
 function ViewMappings() {
     const [selectedSemester, setSelectedSemester] = useState('');
@@ -14,17 +14,21 @@ function ViewMappings() {
     
     function handleGenerate() {
         fetch(`http://localhost:3000/generate?semester=${selectedSemester}`)
-          .then(response => {
-            if (response.ok) {
-              alert('Time table Generated');
-            } else {
-              console.log('Server Error:', response.status);
-            }
-          })
-          .catch(err => {
-            console.log('Fetch Error:', err);
-          });
-      }
+            .then(response => {
+                if (response.ok) {
+                    return response.text(); // Read response body
+                } else {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+            })
+            .then(data => {
+                alert(data); // Show the response in the alert
+            })
+            .catch(err => {
+                console.log('Fetch Error:', err);
+            });
+    }
+    
 
     return (
         <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">

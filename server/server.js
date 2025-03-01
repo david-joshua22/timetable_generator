@@ -193,7 +193,6 @@ app.delete('/deleteSubject/:id', (req, res) => {
 });
 
 app.post('/mapSubFac', (req, res) => {
-    console.log("Received data:", req.body); 
 
     const sql = "INSERT INTO fac_sec_map(`semester_id`,`section_id`,`subject_id`,`faculty_id`) VALUES(?)";
     const values = [
@@ -214,7 +213,6 @@ app.post('/mapSubFac', (req, res) => {
 });
 
 app.post('/labEntry', (req, res) => {
-    console.log("Received lab mapping data:", req.body);
 
     const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`,`faculty_id_C`) VALUES (?)";
 
@@ -480,7 +478,6 @@ app.get('/getLabFacSubMap', (req, res) => {
         return res.status(400).json({ error: 'Semester parameter is required' });
     }
 
-    console.log('Fetching lab mappings for semester:', semester);
 
     const sql = `
         SELECT 
@@ -504,7 +501,6 @@ app.get('/getLabFacSubMap', (req, res) => {
             console.error('Error fetching lab mappings:', err);
             return res.status(500).json({ error: err.message });
         }
-        console.log('Lab mappings data:', data); // Add this to see the result
         res.json(data);
     });
 });
@@ -591,7 +587,9 @@ app.post("/verify-token", (req, res) => {
   app.get('/generate', (req, res) => {
     let GetSemester = req.query;
     getDataAndSchedule(GetSemester.semester);
+    return res.status(200).send('Timetable generated successfully'); // Send a response
 });
+
 
 
 app.listen(3000, () => {

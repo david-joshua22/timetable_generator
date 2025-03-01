@@ -1,100 +1,134 @@
 import Header from "./pages/Header";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Faculty from "./pages/Faculty";
+import AdminDashboard from "./pages/AdminLogin"; // This is actually the Admin Dashboard
+import ProtectedRoute from "./context/ProtectedRoute";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import About from "./pages/About";
+import Footer from "./pages/Footer";
+import Faculty from "./pages/Faculty";
 import AFaculty from "./pages/AFaculty";
 import FacultySubject from "./pages/FacultySubject";
 import SubjectTable from "./pages/SubjectTable";
 import Subjects from "./pages/Subjects";
-import AddElective from "./pages/AddElective";
-import Login from "./pages/Login"; 
-import About from "./pages/About";
-import Footer from "./pages/Footer";
-import UpdateSubject from "./pages/UpdateSubject";
-import AdminLogin from "./pages/AdminLogin";
-import StudentLogin from "./pages/StudentLogin";
-import FacultyDashboard from "./pages/FacultyDashboard"
-import ProtectedRoute from "./context/ProtectedRoute";
 import Display from "./pages/Display";
+import FacultyDashboard from "./pages/FacultyDashboard";
+import StudentLogin from "./pages/StudentLogin";
+import AddElective from "./pages/AddElective";
 import ViewMappings from "./pages/ViewMappings";
-
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   return (
     <BrowserRouter>
-      <Header />
       <MainContent />
     </BrowserRouter>
   );
 }
 
 function MainContent() {
-  const location = useLocation(); 
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div className="rbody">
+      {/* Show Header only if NOT on admin pages */}
+      {!isAdminRoute && <Header />}
+
       <Routes>
-        <Route path="/" element={<Home />} /> 
-        <Route path="/Login"Login element={<Login />} />
-        <Route path="/admin"Login element={
-            <ProtectedRoute roles = {['admin']}>
-              <AdminLogin />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/updateSubject/:id"Login element={
-            <ProtectedRoute roles = {['admin']}>
-              <UpdateSubject />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/sfmap"Login element={
-            <ProtectedRoute roles = {['admin']}>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sfmap"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <FacultySubject />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/viewMapping"Login element={
-            <ProtectedRoute roles = {['admin']}>
-              <ViewMappings/>
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/subjects"Login element={
-            <ProtectedRoute roles = {['admin']}>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subjects"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <SubjectTable />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/addFaculty"Login element={
-            <ProtectedRoute roles = {['admin']}>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/addFaculty"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <AFaculty />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/addSubjects"Login element={
-            <ProtectedRoute roles = {['admin']}>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/addSubjects"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <Subjects />
-          </ProtectedRoute>
-          } ></Route>
-          <Route path="/addElective"Login element={
-            <ProtectedRoute roles = {['admin']}>
-              <AddElective />
-          </ProtectedRoute>
-          } ></Route>
-        <Route path="/faculty"Login element={
-            <ProtectedRoute roles = {['admin']}>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <Faculty />
-          </ProtectedRoute>} ></Route>
-          <Route path="/display"Login element={
-            <ProtectedRoute roles = {['admin']}>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/display"
+          element={
+            <ProtectedRoute roles={["admin"]}>
               <Display />
-          </ProtectedRoute>} ></Route>
-          <Route path="/student"Login element={
-            <ProtectedRoute roles = {['admin','student']}>
-              <StudentLogin/>
-          </ProtectedRoute>} ></Route>
-          <Route path="/displayFaculty"Login element={
-            <ProtectedRoute roles = {['admin','faculty']}>
-              <FacultyDashboard/>
-          </ProtectedRoute>} ></Route>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/addElective"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+                <AddElective/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/viewMapping"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+                <ViewMappings/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student"
+          element={
+            <ProtectedRoute roles={["admin", "student"]}>
+              <StudentLogin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/displayFaculty"
+          element={
+            <ProtectedRoute roles={["admin", "faculty"]}>
+              <FacultyDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
 
+      {/* Show Footer only on Home Page */}
       {location.pathname === "/" && (
         <>
           <About />

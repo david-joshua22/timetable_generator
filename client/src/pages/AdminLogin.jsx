@@ -1,65 +1,89 @@
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import '../styles/AdminLogin.css';
+import { useContext } from "react";
+import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
+import { FiLogOut } from "react-icons/fi";
+import {FaUserPlus,FaBook,FaMapMarkedAlt,FaClipboard,FaEye} from "react-icons/fa";
+import "../styles/AdminLogin.css";
+import { userContext } from "../context/UserContext";
+import Faculty from "./Faculty";
+import Subjects from "./Subjects";
+import SubjectTable from "./SubjectTable";
+import FacultySubject from "./FacultySubject";
+import AFaculty from "./AFaculty";
+import AddElective from "./AddElective";
+import ViewMappings from "./ViewMappings";
+import Display from "./Display";
 
 const AdminDashboard = () => {
-  
+  const { setAuthenticated, setRole } = useContext(userContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setAuthenticated(false);
+    setRole(null);
+    navigate("/login");
+  };
 
   return (
-    <div className="items-center display-1">  
-      <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
-        <div className="adminHeader">
-          <h3>Admin Dashboard</h3>
-        </div>
+    <div className="dashboard-container">
+      <div className="sidebar">
+        <h1 className="sidebar-title">Welcome Admin!</h1>
 
-        <div className="card-container">
-          <Card className="card1">
-            <Card.Body>
-              <Card.Title> Add Faculty </Card.Title> 
-              <Button className="btn-dark text-white" href="/faculty">Enter Faculty</Button>
-            </Card.Body>
-          </Card>
-
-          <Card className="card2">
-            <Card.Body>
-              <Card.Title> Add Subjects </Card.Title>
-              <Button className="btn-dark text-white" href="/subjects">Enter Subjects</Button>
-            </Card.Body>
-          </Card>
-
-          <Card className="card4">
-            <Card.Body>
-              <Card.Title> Add Elective Subject </Card.Title>
-              <Button className="btn-dark text-white" href="/addElective">Add</Button>
-            </Card.Body>
-          </Card>
-
-          <Card className="card3">
-            <Card.Body>
-              <Card.Title> Map Faculty-Subject </Card.Title>
-              <Button className="btn-dark text-white" href="/sfmap">Map</Button>
-            </Card.Body>
-          </Card>
+        <nav className="menu">
+          {/* Add 'end' to prevent highlighting on subroutes */}
           
-          <Card className="card4">
-            <Card.Body>
-              <Card.Title> Generate Timetable </Card.Title>
-              <Button className="btn-dark text-white" href="/viewMapping">View</Button>
-            </Card.Body>
-          </Card>
+           Main Menu
+          
 
-          <Card className="card4">
-            <Card.Body>
-              <Card.Title> View Time Table </Card.Title>
-              <Button className="btn-dark text-white" href="/display">View</Button>
-            </Card.Body>
-          </Card>
+          <NavLink to="/admin/faculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaUserPlus className="icon" /> Add Faculty
+          </NavLink>
 
+          <NavLink to="/admin/subjects" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaBook className="icon" /> Add Subjects
+          </NavLink>
 
-        </div>
+          <NavLink to="/admin/addElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaClipboard className="icon" /> Add Electives
+          </NavLink>
 
+          <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaMapMarkedAlt className="icon" /> Map Faculty-Subject
+          </NavLink>
+
+          <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaEye className="icon" /> Generate Timetable
+          </NavLink>
+
+          <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaEye className="icon" /> View Timetable
+          </NavLink>
+
+        </nav>
+
+        {/* Logout Button */}
+        <button className="logout" onClick={handleLogout}>
+          <FiLogOut className="icon" /> Logout
+        </button>
+      </div>
+
+      {/* Content Area - Shows the selected page dynamically */}
+      <div className="content">
+        <Routes>
+          <Route path="/faculty" element={<Faculty />} />
+          <Route path="/subjects" element={<SubjectTable />} />
+          <Route path="/addSubjects" element={<Subjects />} />
+          <Route path="/sfmap" element={<FacultySubject />} />
+          <Route path="/display" element={<Display />} />
+          <Route path="/addFaculty" element={<AFaculty />} />
+          <Route path="/addElective" element={<AddElective />} />
+          <Route path="/viewMapping" element={<ViewMappings />} />
+          <Route path="/" element={<h3>Welcome to the Admin Dashboard!</h3>} />
+        </Routes>
+      </div>
     </div>
-    </div>
-)}
+  );
+};
 
 export default AdminDashboard;

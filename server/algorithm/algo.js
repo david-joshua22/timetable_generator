@@ -83,7 +83,6 @@ async function assignElectivePeriod(fac_map, sections) {
             days.pop();
             days.pop();
             for (let facultyGroup of facultyList1) {
-                console.log(facultyGroup);
                 let { elective_id, hours_per_week, semester_id, faculty_id, sections: allSections, elective_section } = facultyGroup;
                 let assigned_hours = 0;
                 let days_hours = hours_per_week;

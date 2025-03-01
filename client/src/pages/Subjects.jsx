@@ -22,7 +22,7 @@ function Subjects(){
         .then(response => response.json())
         .then(data =>{
             console.log('Success:', data),
-            navigate('/subjects')
+            navigate('/admin/subjects')
     })
         .catch(error => console.error('Error:', error));
     };
@@ -42,6 +42,7 @@ function Subjects(){
                 <option>Enter Subject type</option>
                 <option value="1">Lecture</option>
                 <option value="2">Lab</option>
+                <option value="3">Elective</option>
             </Form.Select>
             </div>
             <div className="mb-3 ">
