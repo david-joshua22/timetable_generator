@@ -12,6 +12,7 @@ import AFaculty from "./AFaculty";
 import AddElective from "./AddElective";
 import ViewMappings from "./ViewMappings";
 import Display from "./Display";
+import EditTimetable from "./EditTimetable";
 
 const AdminDashboard = () => {
   const { setAuthenticated, setRole } = useContext(userContext);
@@ -60,6 +61,10 @@ const AdminDashboard = () => {
             <FaEye className="icon" /> View Timetable
           </NavLink>
 
+          <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaEye className="icon" /> Edit Timetable
+          </NavLink>
+
         </nav>
 
         {/* Logout Button */}
@@ -79,6 +84,7 @@ const AdminDashboard = () => {
           <Route path="/addFaculty" element={<AFaculty />} />
           <Route path="/addElective" element={<AddElective />} />
           <Route path="/viewMapping" element={<ViewMappings />} />
+          <Route path="/editTimetable" element={<EditTimetable />} />
           <Route path="/" element={<div>
             <h1>Welcome to Admin Dashboard</h1>
             <p>Here you can manage faculty, subjects, and electives.</p>

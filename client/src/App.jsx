@@ -16,6 +16,7 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentLogin from "./pages/StudentLogin";
 import AddElective from "./pages/AddElective";
 import ViewMappings from "./pages/ViewMappings";
+import EditTimetable from "./pages/EditTimetable";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
@@ -107,6 +108,14 @@ function MainContent() {
           element={
             <ProtectedRoute roles={["admin"]}>
                 <ViewMappings/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/editTimetable"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+                <EditTimetable/>
             </ProtectedRoute>
           }
         />

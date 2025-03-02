@@ -617,7 +617,56 @@ app.post("/verify-token", (req, res) => {
     return res.status(200).send('Timetable generated successfully'); // Send a response
 });
 
+app.post('/editTimetable', async (req, res) => {
+    const { semester_id, section_id, subject_id, faculty_id, day, period} = req.body;
 
+    console.log("Received request:", req.body);
+
+    try {
+            const deleteQuery = `
+                DELETE FROM timetable 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+
+            await db.query(deleteQuery, [semester_id, section_id, day, period]);
+            return res.status(200).json({ message: "Timetable entry deleted successfully" });
+
+    } catch (error) {
+        console.error("Database error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+app.post('/getFaculty', (req, res) => {
+    const { section_id, semester_id, subject_id } = req.body;
+
+    if (!section_id || !semester_id || !subject_id) {
+        return res.status(400).json({ error: "Missing required parameters" });
+    }
+
+    const query = `
+        SELECT faculty.id AS faculty_name, subject.name AS subject_name 
+                         FROM fac_sec_map AS fp 
+                         INNER JOIN faculty ON fp.faculty_id = faculty.id 
+                         INNER JOIN subject ON fp.subject_id = subject.id 
+                         WHERE fp.section_id = ? AND fp.semester_id = ? and subject_id = ?;
+    `;
+
+    db.query(query, [section_id, semester_id, subject_id], (err, results) => {
+        if (err) {
+            console.error("Error fetching faculty data:", err);
+            return res.status(500).json({ error: "Database query failed" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "No faculty found for the given criteria" });
+        }
+
+        res.json(results);
+    });
+});
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");
