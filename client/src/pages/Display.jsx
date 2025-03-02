@@ -35,7 +35,7 @@ const Display = () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Timetable');
 
-    // Add a heading
+    // Add Main Heading
     worksheet.mergeCells('A1', 'G1');
     const titleCell = worksheet.getCell('A1');
     titleCell.value = `CSE Timetable - ${timetable[0]?.semester_id} ${timetable[0]?.section_id}`;
@@ -44,44 +44,80 @@ const Display = () => {
 
     // Define table headers
     const headers = ['Day', 'Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6'];
+    worksheet.addRow([]);
     worksheet.addRow(headers);
 
     // Generate timetable data dynamically
     const periods = [1, 2, 3, 4, 5, 6];
     [1, 2, 3, 4, 5].forEach((day) => {
-      const rowData = [days[day]];
-      periods.forEach((time) => {
-        const subject = timetable.find((item) => item.day === day && item.time === time);
-        rowData.push(subject ? subject.name : '');
-      });
-      worksheet.addRow(rowData);
+        const rowData = [days[day]];
+        periods.forEach((time) => {
+            const subject = timetable.find((item) => item.day === day && item.time === time);
+            rowData.push(subject ? subject.name : '');
+        });
+        worksheet.addRow(rowData);
     });
 
-    // Add faculty information below the timetable
+    // Faculty Heading
     worksheet.addRow([]);
+    worksheet.addRow(['Faculty Details']);
+    worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 2);
+    worksheet.lastRow.font = { bold: true };
+
+    // Faculty Table
     worksheet.addRow(['Subject', 'Faculty']);
     faculty.forEach((item) => {
-      worksheet.addRow([item.subject_name, item.faculty_name]);
+        worksheet.addRow([item.subject_name, item.faculty_name]);
     });
 
-    // Apply border style to all cells
+    // Elective Section (Only for Semesters 5-8)
+    if (semester >= 5 && elective && Object.keys(elective).length > 0) {
+        worksheet.addRow([]);
+        worksheet.addRow(['Elective Details']);
+        worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+        worksheet.lastRow.font = { bold: true };
+
+        // Sort electives by ID and group by elective subject name
+        Object.keys(elective).sort().forEach((electiveId) => {
+            if (elective[electiveId] && elective[electiveId].length > 0) {
+                worksheet.addRow([]); // Empty row for spacing
+                worksheet.addRow([electiveId.toUpperCase()]); // Elective Name as Section Heading
+                worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+                worksheet.lastRow.font = { bold: true };
+
+                worksheet.addRow(['Elective Section', 'Elective Name', 'Faculty']);
+                elective[electiveId].forEach((item) => {
+                    worksheet.addRow([
+                        item.elective_section,
+                        item.elective_name,
+                        `${item.faculty_name} (${item.department})`,
+                    ]);
+                });
+            }
+        });
+    }
+
+    // Apply border and alignment
     worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' },
-        };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-      });
+        row.eachCell((cell) => {
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
     });
 
     // Generate and download the Excel file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, "Timetable CSE-"+timetable[0].semester_id+timetable[0].section_id+".xlsx");
-  };
+    saveAs(blob, `Timetable CSE-${timetable[0].semester_id}${timetable[0].section_id}.xlsx`);
+};
+
+
+
 
     const [semester, setSemester] = useState('');
     const [section, setSection] = useState('');
@@ -257,37 +293,37 @@ const Display = () => {
                   ))}
                 </tbody>
               </Table>
-                {elective && Object.keys(elective).length > 0 ? (
-                    Object.keys(elective).sort().map((electiveId) => (
-                        elective[electiveId] && elective[electiveId].length > 0 && (
-                            <div key={electiveId} className="mb-4">
-                                <h4 className="mt-3">{electiveId.toUpperCase()}</h4>
-                                <Table bordered className="mt-2 timetable-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Elective Section</th>
-                                            <th>Elective Name</th>
-                                            <th>Faculty</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {elective[electiveId].map((item, index) => (
-                                            <tr key={item.id || `${item.faculty_name}-${index}`}>
-                                                <td className='text-uppercase'>{item.elective_section}</td>
-                                                <td className='text-uppercase'>{item.elective_name}</td>
-                                                <td>{item.faculty_name} ({item.department})</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
-                            </div>
-                        )
-                    ))
-                ) : (
-                    <p>No elective data available.</p>
-                )}
-
-
+              {semester >= 5 ? (
+                  elective && Object.keys(elective).length > 0 ? (
+                      Object.keys(elective).sort().map((electiveId) => (
+                          elective[electiveId] && elective[electiveId].length > 0 && (
+                              <div key={electiveId} className="mb-4">
+                                  <h4 className="mt-3">{electiveId.toUpperCase()}</h4>
+                                  <Table bordered className="mt-2 timetable-table">
+                                      <thead>
+                                          <tr>
+                                              <th>Elective Section</th>
+                                              <th>Elective Name</th>
+                                              <th>Faculty</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {elective[electiveId].map((item, index) => (
+                                              <tr key={item.id || `${item.faculty_name}-${index}`}>
+                                                  <td className='text-uppercase'>{item.elective_section}</td>
+                                                  <td className='text-uppercase'>{item.elective_name}</td>
+                                                  <td>{item.faculty_name} ({item.department})</td>
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </Table>
+                              </div>
+                          )
+                      ))
+                  ) : (
+                      <p>No elective data available.</p>
+                  )
+              ) : null}
             </div>          
               <div className="d-flex flex-row justify-content-center text-center m-3">
                 <div className='m-3'>

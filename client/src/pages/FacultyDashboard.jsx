@@ -4,6 +4,8 @@ import Table from 'react-bootstrap/Table';
 import {useState,useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import ExcelJS from "exceljs";
+import {saveAs} from 'file-saver';
 import '../styles/AdminLogin.css';
 
 const FacultyDashboard = () => {
@@ -25,6 +27,69 @@ const FacultyDashboard = () => {
           pdf.save("Timetable CSE-"+timetable[0].faculty_name+".pdf");
         });
       };
+      const handleDownloadExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Faculty Timetable');
+    
+        if (!timetable.length) {
+            console.error("No timetable available for download.");
+            return;
+        }
+    
+        // Add Main Heading
+        worksheet.mergeCells('A1', 'G1');
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = `Faculty Timetable - ${timetable[0]?.faculty_name}`;
+        titleCell.font = { size: 16, bold: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    
+        // Define table headers
+        const headers = ['Day', 'Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6'];
+        worksheet.addRow([]); // Empty row for spacing
+        worksheet.addRow(headers);
+    
+        // Generate timetable data dynamically
+        const periods = [1, 2, 3, 4, 5, 6];
+        [1, 2, 3, 4, 5].forEach((day) => {
+            const rowData = [days[day]];
+            periods.forEach((time) => {
+                const subject = timetable.find((item) => item.day === day && item.time === time);
+                rowData.push(subject ? `${subject.semester_id}${subject.section_id}\n${subject.subject_name}` : '');
+            });
+            worksheet.addRow(rowData);
+        });
+    
+        // Assigned Classes Section
+        worksheet.addRow([]); // Empty row for spacing
+        worksheet.addRow(['Assigned Classes']);
+        worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 2);
+        worksheet.lastRow.font = { bold: true };
+    
+        // Assigned Classes Table
+        worksheet.addRow(['Subject', 'Class']);
+        classList.forEach((item) => {
+            worksheet.addRow([item.subject_name, `${item.semester_id}${item.section_id}`]);
+        });
+    
+        // Apply border and alignment
+        worksheet.eachRow((row) => {
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            });
+        });
+    
+        // Generate and download the Excel file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `Faculty_Timetable-${timetable[0].faculty_name}.xlsx`);
+    };
+    
     const [faculty, setFaculty] = useState([]);
     const [selectedFaculty, setSelectedFaculty] = useState("");
     const [timetable, setTimetable] = useState([]);
@@ -57,6 +122,7 @@ const FacultyDashboard = () => {
           const data = await response.json();
           setTimetable(data);  
           setShowResults(true); // Set showResults after data is fetched
+          console.log(data);
       
         } catch (error) {
           console.error("Fetch error:", error);
@@ -114,31 +180,43 @@ const FacultyDashboard = () => {
           <div> 
               <div className="rounded-lg shadow-md mb-6 cardBox" id="timetable-container">
                 <h1>Time Table CSE - {timetable[0].faculty_name}</h1>
-              <Table bordered className="mt-4 timetable-table">
-                <thead>
-                  <tr>
-                    <th></th>
-                    {[1, 2, 3, 4, 5, 6].map((time) => (
-                      <th key={time} className='colorChange'>Period {time}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1, 2, 3, 4, 5].map((day) => (
-                    <tr key={day}>
-                      <td className='days colorChange'>{days[day]}</td>
-                      {[1, 2, 3, 4, 5, 6].map((time) => {
-                        const subject = timetable.find((item) => item.day === day && item.time === time);
-                        return <td key={time}>{subject ? 
-                        <div>
-                           <span className='facultyStyle'>{subject.semester_id}{subject.section_id}</span> <br/>
-                            {subject.subject_name}
-                        </div> : ""}</td>;
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+                <Table bordered className="mt-4 timetable-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    {[1, 2, 3, 4, 5, 6].map((time) => (
+                                        <th key={time} className='colorChange'>Period {time}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[1, 2, 3, 4, 5].map((day) => (
+                                    <tr key={day}>
+                                        <td className='days colorChange'>{days[day]}</td>
+                                        {[1, 2, 3, 4, 5, 6].map((time) => {
+                                            const subject = timetable.find((item) => item.day === day && item.time === time);
+                                            return (
+                                              <td key={time}>
+                                              {subject ? (
+                                                  <div className='text-uppercase'>
+                                                      <span className='facultyStyle'>
+                                                          {subject.section_id === null && subject.elective_section_id 
+                                                              ? `${subject.semester_id} ${subject.elective_section_id}` 
+                                                              : `${subject.semester_id} ${subject.section_id || ""}`
+                                                          }
+                                                      </span>
+                                                      <br />
+                                                      {subject.elective_name}
+                                                  </div>
+                                              ) : ""}
+                                          </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                </Table>
+
               <Table bordered className="mt-4 timetable-table">
               <thead>
                   <tr>
@@ -148,10 +226,15 @@ const FacultyDashboard = () => {
                 </thead>
                 <tbody>
                 {classList.map((item) => (
-                    <tr key={item.id || item.faculty_name} >
-                      <td>{item.subject_name}</td>
-                      <td>{item.semester_id}{item.section_id}</td>
-                    </tr>
+                    <tr key={item.id || item.faculty_name}>
+                    <td>
+                      {item.subject_name}
+                      {item.elective_name ? ` (${item.elective_name})` : ""}
+                    </td>
+                    <td>
+                      {item.elective_section_id ? item.elective_section_id : `${item.semester_id}${item.section_id}`}
+                    </td>
+                  </tr>
                   ))}
                 </tbody>
               </Table>
@@ -161,6 +244,11 @@ const FacultyDashboard = () => {
                   Download as PDF
                 </Button> 
               </div>
+              <div className='m-3'>
+                  <Button className="btn-dark text-white" onClick={handleDownloadExcel}>
+                    Download as Excel
+                  </Button> 
+                </div>
             </div>
             ) : <div className="text-danger">No timetable available.</div> 
           )  : null}
