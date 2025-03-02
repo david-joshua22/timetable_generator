@@ -54,21 +54,33 @@ const FacultyDashboard = () => {
             const rowData = [days[day]];
             periods.forEach((time) => {
                 const subject = timetable.find((item) => item.day === day && item.time === time);
-                rowData.push(subject ? `${subject.semester_id}${subject.section_id}\n${subject.subject_name}` : '');
+                if (subject) {
+                    const classInfo = subject.type === "Elective" && subject.elective_section_id
+                        ? `${subject.semester_id} ${subject.elective_section_id}`
+                        : `${subject.semester_id} ${subject.section_id || ""}`;
+                    rowData.push(`${classInfo}\n${subject.subject_name || subject.Elective_name}`);
+                } else {
+                    rowData.push('');
+                }
             });
             worksheet.addRow(rowData);
         });
     
         // Assigned Classes Section
         worksheet.addRow([]); // Empty row for spacing
-        worksheet.addRow(['Assigned Classes']);
-        worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 2);
-        worksheet.lastRow.font = { bold: true };
+        const assignedClassesHeader = worksheet.addRow(['Assigned Classes']);
+        worksheet.mergeCells(assignedClassesHeader.number, 1, assignedClassesHeader.number, 2);
+        assignedClassesHeader.font = { bold: true };
     
-        // Assigned Classes Table
+        // Assigned Classes Table Headers
         worksheet.addRow(['Subject', 'Class']);
+    
+        // Add Assigned Classes Data
         classList.forEach((item) => {
-            worksheet.addRow([item.subject_name, `${item.semester_id}${item.section_id}`]);
+            const classInfo = item.type === "Elective" && item.elective_section_id
+                ? `${item.semester_id} ${item.elective_section_id}`
+                : `${item.semester_id} ${item.section_id || ""}`;
+            worksheet.addRow([item.subject_name || item.Elective_name, classInfo]);
         });
     
         // Apply border and alignment
@@ -89,6 +101,7 @@ const FacultyDashboard = () => {
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, `Faculty_Timetable-${timetable[0].faculty_name}.xlsx`);
     };
+    
     
     const [faculty, setFaculty] = useState([]);
     const [selectedFaculty, setSelectedFaculty] = useState("");
@@ -142,7 +155,7 @@ const FacultyDashboard = () => {
       
           const data = await response.json();
           setClassList(data);
-      
+          console.log(data);
         } catch (error) {
           console.error("Fetch error:", error);
         }
@@ -181,63 +194,65 @@ const FacultyDashboard = () => {
               <div className="rounded-lg shadow-md mb-6 cardBox" id="timetable-container">
                 <h1>Time Table CSE - {timetable[0].faculty_name}</h1>
                 <Table bordered className="mt-4 timetable-table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    {[1, 2, 3, 4, 5, 6].map((time) => (
-                                        <th key={time} className='colorChange'>Period {time}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {[1, 2, 3, 4, 5].map((day) => (
-                                    <tr key={day}>
-                                        <td className='days colorChange'>{days[day]}</td>
-                                        {[1, 2, 3, 4, 5, 6].map((time) => {
-                                            const subject = timetable.find((item) => item.day === day && item.time === time);
-                                            return (
-                                              <td key={time}>
-                                              {subject ? (
-                                                  <div className='text-uppercase'>
-                                                      <span className='facultyStyle'>
-                                                          {subject.section_id === null && subject.elective_section_id 
-                                                              ? `${subject.semester_id} ${subject.elective_section_id}` 
-                                                              : `${subject.semester_id} ${subject.section_id || ""}`
-                                                          }
-                                                      </span>
-                                                      <br />
-                                                      {subject.elective_name}
-                                                  </div>
-                                              ) : ""}
-                                          </td>
-                                            );
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                </Table>
+                      <thead>
+                          <tr>
+                              <th></th>
+                              {[1, 2, 3, 4, 5, 6].map((time) => (
+                                  <th key={time} className='colorChange'>Period {time}</th>
+                              ))}
+                          </tr>
+                      </thead>
+                      <tbody>
+                      {[1, 2, 3, 4, 5].map((day) => (
+                          <tr key={day}>
+                              <td className='days colorChange'>{days[day]}</td>
+                              {[1, 2, 3, 4, 5, 6].map((time) => {
+                                  const subject = timetable.find((item) => item.day === day && item.time === time);
+                                  return (
+                                      <td key={`${day}-${time}`}>  {/* Ensure unique key */}
+                                          {subject ? (
+                                              <div className='text-uppercase'>
+                                                  <span className='facultyStyle'>
+                                                      {subject.type === 'Elective' && subject.elective_section_id
+                                                          ? `${subject.semester_id} ${subject.elective_section_id} - ${subject.elective_name}`
+                                                          : `${subject.semester_id} ${subject.section_id || ""} - ${subject.subject_name}`
+                                                      }
+                                                  </span>
+                                              </div>
+                                          ) : ""}
+                                      </td>
+                                  );
+                              })}
+                          </tr>
+                      ))}
+                  </tbody>
 
-              <Table bordered className="mt-4 timetable-table">
-              <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Class</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {classList.map((item) => (
-                    <tr key={item.id || item.faculty_name}>
-                    <td>
-                      {item.subject_name}
-                      {item.elective_name ? ` (${item.elective_name})` : ""}
-                    </td>
-                    <td>
-                      {item.elective_section_id ? item.elective_section_id : `${item.semester_id}${item.section_id}`}
-                    </td>
-                  </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </Table>
+                  <Table bordered className="mt-4 timetable-table">
+                      <thead>
+                          <tr>
+                              <th>Subject</th>
+                              <th>Class</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {classList.map((item, index) => (
+                              <tr key={item.id || `${item.subject_name}-${item.semester_id}-${item.section_id || item.elective_section_id}-${index}`}>
+                                  <td className="text-uppercase">
+                                      {item.type === "Elective" && item.elective_name 
+                                          ? `${item.elective_name} (Elective)`
+                                          : item.subject_name}
+                                  </td>
+                                  <td>
+                                      {item.type === "Elective" && item.elective_section_id
+                                          ? `${item.semester_id} ${item.elective_section_id}`
+                                          : `${item.semester_id} ${item.section_id || ""}`}
+                                  </td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </Table>
+
             </div>          
               <div className="text-center mt-3">
                 <Button className="btn-dark text-white" onClick={downloadPDF}>

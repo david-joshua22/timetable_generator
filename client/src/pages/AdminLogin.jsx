@@ -79,7 +79,10 @@ const AdminDashboard = () => {
           <Route path="/addFaculty" element={<AFaculty />} />
           <Route path="/addElective" element={<AddElective />} />
           <Route path="/viewMapping" element={<ViewMappings />} />
-          <Route path="/" element={<h3>Welcome to the Admin Dashboard!</h3>} />
+          <Route path="/" element={<div>
+            <h1>Welcome to Admin Dashboard</h1>
+            <p>Here you can manage faculty, subjects, and electives.</p>
+          </div>} />
         </Routes>
       </div>
     </div>
