@@ -617,18 +617,26 @@ app.post("/verify-token", (req, res) => {
     return res.status(200).send('Timetable generated successfully'); // Send a response
 });
 
-app.post('/editTimetable', async (req, res) => {
-    const { semester_id, section_id, subject_id, faculty_id, day, period} = req.body;
+app.post('/editTimetable', async(req, res) => {
+    const { semester, section, day, time } = req.body;
 
     console.log("Received request:", req.body);
 
     try {
-            const deleteQuery = `
-                DELETE FROM timetable 
-                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+        const deleteQuery1 = `
+            DELETE FROM timetable 
+            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
 
-            await db.query(deleteQuery, [semester_id, section_id, day, period]);
-            return res.status(200).json({ message: "Timetable entry deleted successfully" });
+        const deleteQuery2 = `
+            DELETE FROM faculty_timetable 
+            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+
+        await Promise.all([
+            db.query(deleteQuery1, [semester, section, day, time]),
+            db.query(deleteQuery2, [semester, section, day, time])
+        ]);
+
+        return res.status(200).json({ message: "Timetable entry deleted successfully" });
 
     } catch (error) {
         console.error("Database error:", error);
@@ -636,7 +644,31 @@ app.post('/editTimetable', async (req, res) => {
     }
 });
 
+app.post('/addToTimetable',async(req,res)=>{
+    try {
+    const { semester, section, day, time,subject_id, faculty_id } = req.body;
 
+        const insertQuery1 = `
+        INSERT INTO timetable(semester_id,section_id,time,day,subject_id) 
+        VALUES(?,?,?,?,?)`;
+
+        const insertQuery2 = `
+            INSERT INTO faculty_timetable(semester_id,section_id,time,day,faculty_id,subject_id) 
+        VALUES(?,?,?,?,?,?)`;
+
+        await Promise.all([
+            db.query(insertQuery1, [semester, section, time,day,subject_id]),
+            db.query(insertQuery2, [semester, section,time, day,faculty_id,subject_id])
+        ]);
+
+    return res.status(200).json({ message: "Timetable entry inserted successfully" });
+
+    } catch (error) {
+    console.error("Database error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+    }
+
+})
 
 
 app.post('/getFaculty', (req, res) => {
