@@ -51,14 +51,13 @@ const EditTimetable = () => {
 
     const handleCellClick = async (day, time) => {
         if (showSelectMessage) {
-            // If in "select cell" mode, call handleAddToTimetable
             await handleAddToTimetable(day, time);
             return;
         }
 
         if (!editMode) return;
 
-        setShowSelectMessage(false); // Hide message when user selects a cell
+        setShowSelectMessage(false); 
 
         const selectedEntry = timetable.find(
             (item) => parseInt(item.day) === parseInt(day) && parseInt(item.time) === time
@@ -68,8 +67,7 @@ const EditTimetable = () => {
             console.warn("No subject found for this slot.");
             return;
         }
-
-        const { subject_id } = selectedEntry;
+        const { subject_id,name } = selectedEntry;
 
         const facultyResponse = await fetch("http://localhost:3000/getFaculty", {
             method: "POST",
@@ -88,7 +86,9 @@ const EditTimetable = () => {
             day,
             time,
             subject_id: subject_id,
-            faculty_id: facultyData[0]?.faculty_name || "Unknown"
+            faculty_id: facultyData[0]?.faculty_id || "Unknown",
+            faculty_name : facultyData[0]?.faculty_name || "Unknown",
+            subject_name :name
         });
     };
 
@@ -107,7 +107,7 @@ const EditTimetable = () => {
 
     const handleAddToTimetable = async (day, time) => {
         if (!selectedCell) return;
-
+    
         try {
             const response = await fetch('http://localhost:3000/addToTimetable', {
                 method: 'POST',
@@ -121,32 +121,32 @@ const EditTimetable = () => {
                     faculty_id: selectedCell.faculty_id
                 })
             });
-
+    
             if (!response.ok) throw new Error('Failed to add to timetable');
-
-            // Update the timetable state to reflect the new entry
-            const newEntry = {
-                day: day,
-                time: time,
-                name: selectedCell.subject_id, // Assuming 'name' is the subject name
-                subject_id: selectedCell.subject_id,
-                faculty_id: selectedCell.faculty_id
-            };
-
-            setTimetable(prev => [...prev, newEntry]);
-
-            // Remove the entry from deletedEntries
-            const updatedDeletedEntries = deletedEntries.filter(e => e !== selectedCell);
-            setDeletedEntries(updatedDeletedEntries);
-            localStorage.setItem("deletedEntries", JSON.stringify(updatedDeletedEntries));
-
+    
+            // Refresh the timetable
+            await fetchTimetable();
+    
+            // Remove the restored entry from deletedEntries correctly
+            setDeletedEntries(prevDeletedEntries => {
+                const updatedDeletedEntries = prevDeletedEntries.filter(e =>
+                    !(e.day === selectedCell.day &&
+                      e.time === selectedCell.time &&
+                      e.subject_id === selectedCell.subject_id &&
+                      e.faculty_id === selectedCell.faculty_id)
+                );
+    
+                localStorage.setItem("deletedEntries", JSON.stringify(updatedDeletedEntries));
+                return updatedDeletedEntries;
+            });
+    
             setSelectedCell(null);
             setShowSelectMessage(false);
         } catch (error) {
             console.error("Error adding to timetable:", error);
         }
     };
-
+    
     const handleDelete = async () => {
         if (!selectedCell) return;
 
@@ -255,12 +255,10 @@ const EditTimetable = () => {
                         <Table className='timetable-table'>
                             <thead>
                                 <tr>
-                                    <th>Semester ID</th>
-                                    <th>Section ID</th>
                                     <th>Day</th>
-                                    <th>Time</th>
-                                    <th>Subject ID</th>
-                                    <th>Faculty ID</th>
+                                    <th>Period</th>
+                                    <th>Subject</th>
+                                    <th>Faculty</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -269,12 +267,10 @@ const EditTimetable = () => {
                                     .filter(entry => entry.semester_id === semester && entry.section_id === section)
                                     .map((entry, index) => (
                                         <tr key={index}>
-                                            <td>{entry.semester_id}</td>
-                                            <td>{entry.section_id}</td>
                                             <td>{days[entry.day]}</td>
                                             <td>{entry.time}</td>
-                                            <td>{entry.subject_id}</td>
-                                            <td>{entry.faculty_id}</td>
+                                            <td>{entry.subject_name || entry.subject_id}</td>
+                                            <td>{entry.faculty_name}</td>
                                             <td>
                                                 <Button className="btn-success" onClick={() => handleRestore(entry)}>
                                                     Add

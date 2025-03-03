@@ -611,10 +611,25 @@ app.post("/verify-token", (req, res) => {
 
 
   
-  app.get('/generate', (req, res) => {
+  app.get('/generate', async(req, res) => {
     let GetSemester = req.query;
-    getDataAndSchedule(GetSemester.semester);
-    return res.status(200).send('Timetable generated successfully'); // Send a response
+    let semester_id = GetSemester.semester;
+
+    const deleteQuery1 = `
+    DELETE FROM timetable 
+    WHERE semester_id = ?`;
+
+    const deleteQuery2 = `
+        DELETE FROM faculty_timetable 
+        WHERE semester_id = ?`;
+
+    await Promise.all([
+        db.query(deleteQuery1, [semester_id]),
+        db.query(deleteQuery2, [semester_id])
+    ]);
+
+    getDataAndSchedule(semester_id);
+    return res.status(200).send('Timetable generated successfully'); 
 });
 
 app.post('/editTimetable', async(req, res) => {
@@ -679,7 +694,7 @@ app.post('/getFaculty', (req, res) => {
     }
 
     const query = `
-        SELECT faculty.id AS faculty_name, subject.name AS subject_name 
+        SELECT faculty.id AS faculty_id,faculty.name AS faculty_name,subject.name AS subject_name 
                          FROM fac_sec_map AS fp 
                          INNER JOIN faculty ON fp.faculty_id = faculty.id 
                          INNER JOIN subject ON fp.subject_id = subject.id 
