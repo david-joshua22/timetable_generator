@@ -1,0 +1,80 @@
+.electives-container {
+    padding: 20px;
+  }
+  
+  .electives-card {
+    background-color: #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .electives-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .electives-table {
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .edit-icon {
+    color: #007bff;
+    cursor: pointer;
+  }
+  
+  .edit-icon:hover {
+    color: #0056b3;
+  }
+  
+  .delete-mode-btn {
+    margin-left: 10px;
+  }
+  
+  .mt-3 {
+    margin-top: 1rem !important;
+  }
+  
+  .mr-2 {
+    margin-right: 0.5rem !important;
+  }
+
+.electives-table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.delete-mode-row {
+  background-color: #ffdddd;
+  transition: background 0.3s ease-in-out;
+}
+
+.delete-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 50px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease-in-out;
+}
+
+.delete-fab:hover {
+  background-color: #c82333;
+}
+
+.delete-mode-toggle {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+}
+
+.electives-container th {
+  text-align: center;
+}

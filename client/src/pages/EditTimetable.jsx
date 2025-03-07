@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import '../styles/DisplayTimetable.css';
 
 const EditTimetable = () => {
@@ -11,14 +11,54 @@ const EditTimetable = () => {
     const [error, setError] = useState(null);
     const [showResults, setShowResults] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [manualEditMode, setManualEditMode] = useState(false);
     const [selectedCell, setSelectedCell] = useState(null);
     const [deletedEntries, setDeletedEntries] = useState([]);
     const [showSelectMessage, setShowSelectMessage] = useState(false);
+    const [pendingRestoreEntry, setPendingRestoreEntry] = useState(null);
+    const [isAddingEntry, setIsAddingEntry] = useState(false);
+    const [unavailableCells, setUnavailableCells] = useState([]); 
+    const tableRef = useRef(null); // Reference for the table
 
     useEffect(() => {
-        const storedData = JSON.parse(localStorage.getItem("deletedEntries")) || [];
-        setDeletedEntries(storedData);
-    }, []);
+        const fetchDeletedEntries = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/getDeletedEntries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ semester, section })
+                });
+    
+                if (!response.ok) throw new Error('Failed to fetch deleted entries');
+    
+                const data = await response.json();
+                setDeletedEntries(data);
+            } catch (error) {
+                console.error("Error fetching deleted entries:", error);
+            }
+        };
+    
+        if (semester && section) {
+            fetchDeletedEntries();
+            fetchTimetable();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [semester, section]); 
+    
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (tableRef.current && !tableRef.current.contains(event.target)) {
+                // ✅ Prevent resetting selection if clicking Delete button
+                if (event.target.closest(".delete-btn")) return;
+                setSelectedCell(null);
+            }
+        };
+    
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [tableRef]); 
 
     const days = { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday' };
 
@@ -49,37 +89,61 @@ const EditTimetable = () => {
         }
     };
 
+    const handlePrepareForManualAdd =async (entry) => {
+        if (!editMode) setEditMode(true);
+        setPendingRestoreEntry(entry);
+        setShowSelectMessage(true);
+        setIsAddingEntry(true);
+        try {
+            const response = await fetch('http://localhost:3000/checkCellAvailability', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    faculty_id: entry.faculty_id,
+                    semester_id: entry.semester_id,
+                    section_id: entry.section_id
+                })
+            });
+    
+            if (!response.ok) throw new Error('Failed to fetch unavailable cells');
+    
+            const data = await response.json();
+            setUnavailableCells(data); // Store unavailable cells
+        } catch (error) {
+            console.error("Error fetching unavailable cells:", error);
+        }
+    };
+
     const handleCellClick = async (day, time) => {
-        if (showSelectMessage) {
-            await handleAddToTimetable(day, time);
+        if (pendingRestoreEntry) {
+            await handleAddToTimetable(day, time, pendingRestoreEntry);
             return;
         }
-
+    
         if (!editMode) return;
-
-        setShowSelectMessage(false); 
-
+    
+        setShowSelectMessage(false);
+    
         const selectedEntry = timetable.find(
             (item) => parseInt(item.day) === parseInt(day) && parseInt(item.time) === time
         );
-
+    
         if (!selectedEntry) {
             console.warn("No subject found for this slot.");
             return;
         }
-        const { subject_id,name } = selectedEntry;
-
+        const { subject_id, name } = selectedEntry;
+    
         const facultyResponse = await fetch("http://localhost:3000/getFaculty", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ section_id: section, semester_id: semester, subject_id })
         });
-
+    
         if (!facultyResponse.ok) throw new Error("Failed to fetch faculty");
-
+    
         const facultyData = await facultyResponse.json();
-        console.log(facultyData);
-
+    
         setSelectedCell({
             semester_id: semester,
             section_id: section,
@@ -87,69 +151,103 @@ const EditTimetable = () => {
             time,
             subject_id: subject_id,
             faculty_id: facultyData[0]?.faculty_id || "Unknown",
-            faculty_name : facultyData[0]?.faculty_name || "Unknown",
-            subject_name :name
+            faculty_name: facultyData[0]?.faculty_name || "Unknown",
+            subject_name: name
         });
+    };    
+
+    const handleCancelAdd = () => {
+        setEditMode(false); // Exit edit mode
+            setManualEditMode(false); // Exit manual edit mode
+            setPendingRestoreEntry(null); // Remove pending entry
+            setShowSelectMessage(false); // Hide select message
+            setIsAddingEntry(false); // Hide "Cancel" button
+            setUnavailableCells([]); // Clear 
     };
-
-    const handleRestore = (entry) => {
-        setSelectedCell({
-            semester_id: entry.semester_id,
-            section_id: entry.section_id,
-            day: entry.day,
-            time: entry.time,
-            subject_id: entry.subject_id,
-            faculty_id: entry.faculty_id
-        });
-
-        setShowSelectMessage(true);
-    };
-
-    const handleAddToTimetable = async (day, time) => {
-        if (!selectedCell) return;
+    
+    const handleAddToTimetable = async (day, time, entry) => {
+        if (!entry) return;
     
         try {
             const response = await fetch('http://localhost:3000/addToTimetable', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    semester: selectedCell.semester_id,
-                    section: selectedCell.section_id,
+                    semester: entry.semester_id,
+                    section: entry.section_id,
                     day: day,
                     time: time,
-                    subject_id: selectedCell.subject_id,
-                    faculty_id: selectedCell.faculty_id
+                    subject_id: entry.subject_id,
+                    faculty_id: entry.faculty_id,
+                    faculty_name: entry.faculty_name,
+                    subject_name: entry.subject_name
                 })
             });
     
             if (!response.ok) throw new Error('Failed to add to timetable');
+            console.log("Entry added successfully!");
     
-            // Refresh the timetable
-            await fetchTimetable();
-    
-            // Remove the restored entry from deletedEntries correctly
-            setDeletedEntries(prevDeletedEntries => {
-                const updatedDeletedEntries = prevDeletedEntries.filter(e =>
-                    !(e.day === selectedCell.day &&
-                      e.time === selectedCell.time &&
-                      e.subject_id === selectedCell.subject_id &&
-                      e.faculty_id === selectedCell.faculty_id)
-                );
-    
-                localStorage.setItem("deletedEntries", JSON.stringify(updatedDeletedEntries));
-                return updatedDeletedEntries;
+            const deleteResponse = await fetch('http://localhost:3000/removeDeletedEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    semester: entry.semester_id,
+                    section: entry.section_id,
+                    day: entry.day,
+                    time: entry.time
+                })
             });
     
-            setSelectedCell(null);
+            if (!deleteResponse.ok) throw new Error('Failed to remove entry from deleted records');
+            console.log("Deleted entry removed from database!");
+    
+            setDeletedEntries(prevDeletedEntries => prevDeletedEntries.filter(
+                e => !(e.day === entry.day && e.time === entry.time && e.subject_id === entry.subject_id)
+            ));
+    
+            await fetchTimetable();
+
+            if (!manualEditMode) {
+                setEditMode(false);
+            }
+            setPendingRestoreEntry(null);
             setShowSelectMessage(false);
+            setIsAddingEntry(false);
+            setUnavailableCells([]);
+    
         } catch (error) {
             console.error("Error adding to timetable:", error);
         }
     };
     
+    const fetchDeletedEntries = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/getDeletedEntries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semester, section })
+            });
+    
+            if (!response.ok) {
+                console.error("Failed to fetch deleted entries, response status:", response.status);
+                throw new Error('Failed to fetch deleted entries');
+            }
+    
+            const data = await response.json();
+            console.log("Fetched Deleted Entries:", data); // ✅ Debugging log
+    
+            setDeletedEntries(data || []); // ✅ Ensure it's always an array
+            return data;
+        } catch (error) {
+            console.error("Error fetching deleted entries:", error);
+            setDeletedEntries([]); // ✅ Prevents undefined errors
+            return [];
+        }
+    };
+    
     const handleDelete = async () => {
         if (!selectedCell) return;
-
+    
         try {
             const response = await fetch('http://localhost:3000/editTimetable', {
                 method: 'POST',
@@ -158,39 +256,38 @@ const EditTimetable = () => {
                     semester: selectedCell.semester_id,
                     section: selectedCell.section_id,
                     day: selectedCell.day,
-                    time: selectedCell.time
+                    time: selectedCell.time,
+                    subject_id: selectedCell.subject_id,
+                    faculty_id: selectedCell.faculty_id,
+                    faculty_name: selectedCell.faculty_name,
+                    subject_name: selectedCell.subject_name
                 })
             });
-
+    
             if (!response.ok) throw new Error('Failed to update timetable');
-
-            // Store the full entry (including subject_id and faculty_id) in deletedEntries
-            const newDeletedEntries = [...deletedEntries, selectedCell];
-            setDeletedEntries(newDeletedEntries);
-            localStorage.setItem("deletedEntries", JSON.stringify(newDeletedEntries));
-
+    
+            // Fetch updated deleted entries from DB
+            await fetchDeletedEntries(); // ✅ Now correctly calls the function
+    
             // Remove from timetable
             setTimetable(prev => prev.filter(
                 item => !(item.day === selectedCell.day && item.time === selectedCell.time)
             ));
-
+    
             setSelectedCell(null);
             fetchTimetable();
         } catch (error) {
             console.error("Error deleting entry:", error);
         }
     };
+    
+    
 
     return (
         <div className="items-center display-1">
             <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
                 <div className="timetableHeader">
                     <h3 className='text-center'>Edit TimeTable</h3>
-                    {showResults && (
-                        <Button className="btn-warning" onClick={() => setEditMode(!editMode)}>
-                            {editMode ? "Exit Edit Mode" : "Edit"}
-                        </Button>
-                    )}
                 </div>
 
                 <div className="d-flex justify-content-center pt-1 pb-3">
@@ -204,16 +301,36 @@ const EditTimetable = () => {
                     </Form.Select>
                 </div>
 
-                <div className="text-center">
-                    <Button className="btn-dark text-white" onClick={fetchTimetable}>VIEW</Button>
-                </div>
-
-                {error && <p className="text-danger">{error}</p>}
+                {error && <p className="text-danger error-timetable">{error}</p>}
                 
-                {showResults && timetable.length > 0 && (
+                {showResults && timetable.length > 0 ? (
                     <div>
+                    <div className='d-flex flex-row justify-content-between'>
                         <h1>Time Table CSE - {semester} {section}</h1>
-                        <Table className="timetable-table">
+                        {showResults && (
+                            <div className='m-1'>
+                                <Button className="btn-warning" onClick={() => {
+                                    setEditMode(!editMode);
+                                    setManualEditMode(!editMode); // ✅ Track manual toggling
+                                }}>
+                                    {editMode ? "Exit Edit Mode" : "Edit"}
+                                </Button>
+                            </div>
+                    )}
+                    </div>
+                    {showSelectMessage && (
+                        <div className="text-center d-flex flex-row m-2 justify-content-between">
+                            <p className="text-danger text-center error">
+                                *Select the cell in the timetable to add the subject - {pendingRestoreEntry.subject_name}
+                            </p>
+                            {isAddingEntry && (
+                                    <Button className="btn-danger" onClick={handleCancelAdd}>
+                                        Cancel
+                                    </Button>
+                            )}
+                        </div>
+                    )}
+                        <Table ref={tableRef} className={`timetable-table ${editMode ? 'table-edit-mode' : ''}`}>
                             <thead>
                                 <tr>
                                     <th>Day</th>
@@ -228,12 +345,15 @@ const EditTimetable = () => {
                                             const subject = timetable.find(
                                                 (item) => parseInt(item.day) === parseInt(dayKey) && parseInt(item.time) === periodIndex + 1
                                             );
+                                            const isUnavailable = unavailableCells.some(
+                                                (cell) => cell.day === parseInt(dayKey) && cell.time === periodIndex + 1
+                                            );
                                             return (
                                                 <td 
                                                     key={periodIndex} 
-                                                    onClick={() => handleCellClick(dayKey, periodIndex + 1)}
-                                                    className="clickable-cell"
-                                                    style={{ cursor: editMode ? 'pointer' : 'default' }}
+                                                    onClick={() => !isUnavailable && handleCellClick(dayKey, periodIndex + 1)}
+                                                    className={`clickable-cell ${selectedCell?.day === dayKey && selectedCell?.time === (periodIndex + 1) ? "selected-cell" : ""} ${isUnavailable ? "unavailable-cell" : ""}`}
+                                                    style={{ cursor: editMode && !isUnavailable ? 'pointer' : 'not-allowed', backgroundColor: isUnavailable ? 'lightgray' : 'inherit' }}
                                                 >
                                                     {subject ? subject.name : ""}
                                                 </td>
@@ -243,13 +363,10 @@ const EditTimetable = () => {
                                 ))}
                             </tbody>
                         </Table>
-                        {selectedCell && <Button className="btn-danger" onClick={handleDelete}>Delete</Button>}
+                        {selectedCell && <Button className="btn-danger delete-btn" onClick={handleDelete}>Delete</Button>}
                     </div>
-                )}
-                {showSelectMessage && (
-                    <p className="text-warning text-center mt-3">Select the cell to add the entry</p>
-                )}
-                {deletedEntries.length > 0 && (
+                ):(showResults && timetable.length === 0 &&  (<p className='noTimetable'>No TimeTable</p>))}
+               {deletedEntries.length > 0 ? (
                     <div>
                         <h2>Deleted Entries</h2>
                         <Table className='timetable-table'>
@@ -263,25 +380,26 @@ const EditTimetable = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {deletedEntries
-                                    .filter(entry => entry.semester_id === semester && entry.section_id === section)
-                                    .map((entry, index) => (
-                                        <tr key={index}>
-                                            <td>{days[entry.day]}</td>
-                                            <td>{entry.time}</td>
-                                            <td>{entry.subject_name || entry.subject_id}</td>
-                                            <td>{entry.faculty_name}</td>
-                                            <td>
-                                                <Button className="btn-success" onClick={() => handleRestore(entry)}>
+                                {deletedEntries.map((entry, index) => (
+                                    <tr key={index}>
+                                        <td>{days[entry.day]}</td>
+                                        <td>{entry.time}</td>
+                                        <td>{entry.subject_name || entry.subject_id}</td>
+                                        <td>{entry.faculty_name}</td>
+                                        <td>
+                                                <Button className="btn-primary m-2" onClick={() => handlePrepareForManualAdd(entry)}>
                                                     Add
                                                 </Button>
-                                            </td>
-                                        </tr>
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </Table>
                     </div>
+                ) : showResults && timetable.length > 0 &&  (
+                    <p className="text-center text-muted error-timetable">No deleted entries found.</p>
                 )}
+
             </div>
         </div>
     );

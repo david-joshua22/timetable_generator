@@ -125,6 +125,41 @@ app.get('/getElectives',(req,res)=>{
     })
 })
 
+app.delete('/deleteElective/:compositeKey', (req, res) => {
+    const compositeKey = req.params.compositeKey;
+    // Assuming the format is "semester_id-elective_section-elective_id"
+    const [semester_id, elective_section, elective_id] = compositeKey.split('-');
+
+    if (!semester_id || !elective_section || !elective_id) {
+        console.error('Invalid composite key format:', compositeKey);
+        return res.status(400).json({ error: "Invalid composite key format" });
+    }
+
+    const checkSql = `SELECT * FROM elective WHERE semester_id = ? AND elective_section = ? AND elective_id = ?;`;
+
+    db.query(checkSql, [semester_id, elective_section, elective_id], (err, results) => {
+        if (err) {
+            console.error('Error checking elective:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Elective not found" });
+        }
+
+        const deleteSql = `DELETE FROM elective WHERE semester_id = ? AND elective_section = ? AND elective_id = ?;`;
+
+        db.query(deleteSql, [semester_id, elective_section, elective_id], (err, data) => {
+            if (err) {
+                console.error('Error deleting elective:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: "Elective deleted successfully" });
+        });
+    });
+});
+
+
 app.get('/viewFaculty/:id',(req,res)=>{
     const id = req.params.id;
     const sql = "SELECT * FROM faculty WHERE id = ?";
@@ -163,11 +198,12 @@ app.get('/viewSubject/:id', (req, res) => {
 // Update subject
 app.post('/updateSubject/:id', (req, res) => {
     const id = req.params.id;
-    const sql = "UPDATE subject SET name = ?, type = ?, hours_per_week = ? WHERE id = ?";
+    const sql = "UPDATE subject SET name = ?, type = ?, hours_per_week = ?, semester_id = ? WHERE id = ?";
     const values = [
         req.body.name,
         req.body.type,
         req.body.hours_per_week,
+        req.body.semester_id, 
         id
     ];
     
@@ -426,8 +462,6 @@ app.post('/getFacOfClass', (req, res) => {
         });
 
 
-
-
 // Fetch subjects based on the selected semester
 app.get('/getSubjectsBySemester', (req, res) => {
     const semester = req.query.semester;
@@ -548,8 +582,6 @@ app.delete('/deleteLabFacSubMap/:id', (req, res) => {
 });
 
 
-
-
 app.post("/login", (req, res) => {
     const { username, password, loginType } = req.body;
 
@@ -623,17 +655,22 @@ app.post("/verify-token", (req, res) => {
         DELETE FROM faculty_timetable 
         WHERE semester_id = ?`;
 
+    const deleteQuery3 = `
+        DELETE FROM delete_entries 
+        WHERE semester_id = ?`;
+
     await Promise.all([
         db.query(deleteQuery1, [semester_id]),
-        db.query(deleteQuery2, [semester_id])
+        db.query(deleteQuery2, [semester_id]),
+        db.query(deleteQuery3, [semester_id])
     ]);
 
     getDataAndSchedule(semester_id);
     return res.status(200).send('Timetable generated successfully'); 
 });
 
-app.post('/editTimetable', async(req, res) => {
-    const { semester, section, day, time } = req.body;
+app.post('/editTimetable', async (req, res) => {
+    const {semester,section,day,time,subject_id,faculty_id,faculty_name,subject_name} = req.body;
 
     console.log("Received request:", req.body);
 
@@ -646,18 +683,25 @@ app.post('/editTimetable', async(req, res) => {
             DELETE FROM faculty_timetable 
             WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
 
+        const insertDeletedEntryQuery = `
+            INSERT INTO delete_entries (semester_id, section_id, day, time, subject_id, faculty_id, faculty_name, subject_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        // Execute deletion and insertion in parallel
         await Promise.all([
             db.query(deleteQuery1, [semester, section, day, time]),
-            db.query(deleteQuery2, [semester, section, day, time])
+            db.query(deleteQuery2, [semester, section, day, time]),
+            db.query(insertDeletedEntryQuery, [semester, section, day, time, subject_id, faculty_id, faculty_name, subject_name])
         ]);
 
-        return res.status(200).json({ message: "Timetable entry deleted successfully" });
+        return res.status(200).json({ message: "Timetable entry deleted and stored in deleted_entries successfully" });
 
     } catch (error) {
         console.error("Database error:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 app.post('/addToTimetable',async(req,res)=>{
     try {
@@ -684,6 +728,48 @@ app.post('/addToTimetable',async(req,res)=>{
     }
 
 })
+
+app.post('/getDeletedEntries', (req, res) => {
+    const { semester, section } = req.body;
+
+    try {
+        const fetchQuery = `SELECT * FROM delete_entries WHERE semester_id = ? AND section_id = ?`;
+
+        db.query(fetchQuery, [semester, section], (err, results) => {
+            if (err) {
+                console.error("Error fetching deleted entries:", err);
+                return res.status(500).json({ error: "Database query failed" });
+            }
+
+            console.log("Deleted Entries Retrieved:", results); // ✅ Debugging Log
+
+            // ✅ Instead of 404, return an empty array if no results are found
+            return res.status(200).json(results || []);
+        });
+
+    } catch (error) {
+        console.error("Database error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+app.post('/removeDeletedEntry', async (req, res) => {
+    const { semester, section, day, time } = req.body;
+
+    try {
+        const deleteQuery = `
+            DELETE FROM delete_entries 
+            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+
+        await db.query(deleteQuery, [semester, section, day, time]);
+
+        return res.status(200).json({ message: "Deleted entry removed from records" });
+    } catch (error) {
+        console.error("Database error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 
 app.post('/getFaculty', (req, res) => {
@@ -714,6 +800,47 @@ app.post('/getFaculty', (req, res) => {
         res.json(results);
     });
 });
+
+app.post('/checkCellAvailability', (req, res) => {
+    const { faculty_id, semester_id, section_id } = req.body;
+
+    const query1 = `
+        SELECT day, time FROM timetable 
+        WHERE semester_id = ? AND section_id = ?;
+    `;
+
+    const query2 = `
+        SELECT day, time FROM faculty_timetable 
+        WHERE faculty_id = ?;
+    `;
+
+    Promise.all([
+        new Promise((resolve, reject) => {
+            db.query(query1, [semester_id, section_id], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        }),
+        new Promise((resolve, reject) => {
+            db.query(query2, [faculty_id], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        })
+    ])
+    .then(([timetableResults, facultyResults]) => {
+        const combinedResults = [...timetableResults, ...facultyResults];
+
+        const uniqueResults = Array.from(new Set(combinedResults.map(JSON.stringify))).map(JSON.parse);
+
+        res.status(200).json(uniqueResults);
+    })
+    .catch(err => {
+        console.error("Error checking cell availability:", err);
+        res.status(500).json({ error: "Database query failed" });
+    });
+});
+
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

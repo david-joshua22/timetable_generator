@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import About from "./pages/About";
 import Footer from "./pages/Footer";
 import Faculty from "./pages/Faculty";
-import AFaculty from "./pages/AFaculty";
+import AFaculty from "./pages/AddFaculty";
 import FacultySubject from "./pages/FacultySubject";
 import SubjectTable from "./pages/SubjectTable";
 import Subjects from "./pages/Subjects";
@@ -17,6 +17,7 @@ import StudentLogin from "./pages/StudentLogin";
 import AddElective from "./pages/AddElective";
 import ViewMappings from "./pages/ViewMappings";
 import EditTimetable from "./pages/EditTimetable";
+import DisplayElectives from "./pages/DisplayElectives";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
@@ -103,6 +104,16 @@ function MainContent() {
             </ProtectedRoute>
           }
         />
+        
+        <Route
+          path="/displayElective"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+                <DisplayElectives/>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/viewMapping"
           element={

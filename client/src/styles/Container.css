@@ -1,9 +1,53 @@
-.cardBox {
-    border-radius: 0.8rem;
-    border: 1px solid #444;
-    padding: 20px;
-    margin: 30px;
-    background: #fff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
+.elective-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 500px;
+}
+
+.elective-box, .elective-details {
+  width: 50%;
+  height: 355px;
+  padding: 20px;
+  border-radius: 10px;
+  background: #d8d8d8;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: width 0.3s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+.elective-box h2, .elective-details h2 {
+  text-align: center;
+}
+
+.arrow-button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.elective-details {
+  opacity: 0;
+  width: 0;
+}
+
+.elective-details.show {
+  opacity: 1;
+  width: 50%;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
+
+.added-elective {
+  background-color: #e5e7eb;
+  width: calc(100% - 50px);
+  max-width: calc(100vw - 50px);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

@@ -1,93 +1,111 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Modal, Table, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 import '../styles/SubjectTable.css';
 
 function SubjectTable() {
     const [subjects, setSubjects] = useState([]);
-    const [showDeleteSymbol, setShowDeleteSymbol] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
+    const [deleteMode, setDeleteMode] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [deleteIds, setDeleteIds] = useState([]);
+    const [selectAll, setSelectAll] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [subject, setSubject] = useState({ id: '', name: '', type: '', hours_per_week: '', semester_id: '' });
+    const [editSubject, setEditSubject] = useState({
+        id: '', semester_id: '', name: '', type: '', hours_per_week: ''
+    });
 
-    // Optimized function to fetch subjects
-    const fetchSubjects = useCallback(() => {
+    useEffect(() => {
+        fetchSubjects();
+    }, []);
+
+    useEffect(() => {
+        if (subjects.length > 0 && deleteIds.length === subjects.length) {
+            setSelectAll(true);
+        } else {
+            setSelectAll(false);
+        }
+    }, [deleteIds, subjects]);
+
+    const fetchSubjects = () => {
         fetch('http://localhost:3000/subjects')
             .then(response => response.json())
             .then(data => setSubjects(data))
             .catch(error => console.error('Error fetching subjects data:', error));
-    }, []);
+    };
 
-    useEffect(() => {
-        fetchSubjects();
-    }, [fetchSubjects]);
+    const handleCheckboxChange = (id) => {
+        setDeleteIds(prev =>
+            prev.includes(id) ? prev.filter(deleteId => deleteId !== id) : [...prev, id]
+        );
+    };
 
-    // Handle subject deletion
-    const handleDelete = (id) => {
-        setDeleteId(id);
-        setShowConfirmation(true);
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setDeleteIds([]);
+        } else {
+            setDeleteIds(subjects.map(item => item.id));
+        }
+        setSelectAll(!selectAll);
     };
 
     const confirmDelete = () => {
-        if (deleteId !== null) {
-            fetch(`http://localhost:3000/deleteSubject/${deleteId}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(() => {
-                fetchSubjects();
-                setShowConfirmation(false);
-                setDeleteId(null);
-            })
-            .catch(error => console.error('Error:', error));
+        if (deleteIds.length > 0) {
+            Promise.all(deleteIds.map(id =>
+                fetch(`http://localhost:3000/deleteSubject/${id}`, { method: 'DELETE' })
+            ))
+                .then(() => {
+                    fetchSubjects();
+                    setDeleteIds([]);
+                    setSelectAll(false);
+                })
+                .catch(error => console.error('Error deleting subjects:', error));
         }
+        setShowConfirmation(false);
     };
 
-    // Handle edit button click
-    const handleEdit = (subjectData) => {
-        setSubject(subjectData);
+    const handleEdit = (subject) => {
+        setEditSubject(subject);
         setShowEditModal(true);
     };
 
-    // Handle form input changes
-    const handleChange = (e) => {
-        setSubject({ ...subject, [e.target.name]: e.target.value });
+    const handleEditChange = (e) => {
+        setEditSubject(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    // Handle form submission (Edit Subject)
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        fetch(`http://localhost:3000/updateSubject/${subject.id}`, {
+    const saveEdit = () => {
+        fetch(`http://localhost:3000/updateSubject/${editSubject.id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subject)
+            body: JSON.stringify(editSubject)
         })
-        .then(response => response.json())
-        .then(() => {
-            fetchSubjects(); // Refresh table
-            setShowEditModal(false); // Close modal
-        })
-        .catch(error => console.error('Error:', error));
+            .then(() => {
+                fetchSubjects();
+                setShowEditModal(false);
+            })
+            .catch(error => console.error('Error updating subject:', error));
     };
 
     return (
         <div className="subject-container">
             <div className="subject-card">
                 <div className="subject-actions">
-                    <Link to="/admin/addSubjects" className="bg-black add-subject-btn">
+                    <Link to="/admin/addSubjects" className="add-subject-btn btn-dark">
                         Add Subject
                     </Link>
-                    <Button
-                        variant="danger"
-                        onClick={() => setShowDeleteSymbol(!showDeleteSymbol)}
-                        className="delete-mode-btn"
-                    >
-                        Delete Mode
-                    </Button>
+
+                    <div className="delete-mode-toggle">
+                        <Form.Check
+                            type="switch"
+                            id="delete-mode-switch"
+                            label="Enable Delete Mode"
+                            checked={deleteMode}
+                            onChange={() => setDeleteMode(!deleteMode)}
+                        />
+                    </div>
                 </div>
 
-                <Table striped bordered hover className="subject-table table-responsive">
+                <Table striped bordered hover className="subject-table mt-3">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -96,39 +114,42 @@ function SubjectTable() {
                             <th>Subject Type</th>
                             <th>Hours Per Week</th>
                             <th>Edit</th>
-                            {showDeleteSymbol && <th>Delete</th>}
+                            {deleteMode && (
+                                <th className="text-center">
+                                    <span>Select All</span>
+                                    <Form.Check
+                                        type="checkbox"
+                                        checked={selectAll}
+                                        onChange={handleSelectAll}
+                                        className="ms-2 large-checkbox"
+                                    />
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
                         {subjects.map((item) => (
-                            <tr key={item.id}>
+                            <tr key={item.id} className={deleteMode ? "delete-mode-row" : ""}>
                                 <td>{item.id}</td>
                                 <td>{item.semester_id}</td>
                                 <td>{item.name}</td>
                                 <td>
-                                    {item.type === '1' ? 'Lecture' : 
-                                    item.type === '2' ? 'Lab' : 
-                                    item.type === '3' ? 'Seminar' : item.type}
+                                    {item.type === '1' ? 'Lecture' :
+                                        item.type === '2' ? 'Lab' :
+                                            item.type === '3' ? 'Seminar' : item.type}
                                 </td>
                                 <td>{item.hours_per_week}</td>
-                                <td>
-                                    <Button
-                                        variant="warning"
-                                        className="edit-btn"
-                                        onClick={() => handleEdit(item)}
-                                    >
-                                        Edit
-                                    </Button>
+                                <td className="text-center">
+                                    <FaPencilAlt className="edit-icon" onClick={() => handleEdit(item)} />
                                 </td>
-                                {showDeleteSymbol && (
-                                    <td>
-                                        <Button
-                                            variant="danger"
-                                            className="delete-btn"
-                                            onClick={() => handleDelete(item.id)}
-                                        >
-                                            -
-                                        </Button>
+                                {deleteMode && (
+                                    <td className="text-center">
+                                        <Form.Check
+                                            type="checkbox"
+                                            className="large-checkbox"
+                                            checked={deleteIds.includes(item.id)}
+                                            onChange={() => handleCheckboxChange(item.id)}
+                                        />
                                     </td>
                                 )}
                             </tr>
@@ -136,96 +157,68 @@ function SubjectTable() {
                     </tbody>
                 </Table>
 
-                {/* Delete Confirmation Modal */}
+                {deleteMode && deleteIds.length > 0 && (
+                    <Button
+                        variant="danger"
+                        className="delete-fab"
+                        onClick={() => setShowConfirmation(true)}
+                    >
+                        <FaTrashAlt /> Delete Selected
+                    </Button>
+                )}
+
                 <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
                     <Modal.Header closeButton>
                         <Modal.Title>Confirm Deletion</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <p>Are you sure you want to delete this subject?</p>
+                        <p>Are you sure you want to delete the selected subjects?</p>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowConfirmation(false)}>
-                            Cancel
-                        </Button>
-                        <Button variant="danger" onClick={confirmDelete}>
-                            Delete
-                        </Button>
+                        <Button variant="secondary" onClick={() => setShowConfirmation(false)}>Cancel</Button>
+                        <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+                    </Modal.Footer>
+                </Modal>
+
+                {/* Edit Subject Modal */}
+                <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Edit Subject</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group controlId="formSubjectCode">
+                                <Form.Label>Subject Code</Form.Label>
+                                <Form.Control type="text" name="id" value={editSubject.id} onChange={handleEditChange} disabled />
+                            </Form.Group>
+                            <Form.Group controlId="formSubjectName" className="mt-3">
+                                <Form.Label>Subject Name</Form.Label>
+                                <Form.Control type="text" name="name" value={editSubject.name} onChange={handleEditChange} />
+                            </Form.Group>
+                            <Form.Group controlId="formSubjectSemester" className="mt-3">
+                                <Form.Label>Semester</Form.Label>
+                                <Form.Control type="number" name="semester_id" value={editSubject.semester_id} onChange={handleEditChange} />
+                            </Form.Group>
+                            <Form.Group controlId="formSubjectType" className="mt-3">
+                                <Form.Label>Subject Type</Form.Label>
+                                <Form.Select name="type" value={editSubject.type} onChange={handleEditChange}>
+                                    <option value="1">Lecture</option>
+                                    <option value="2">Lab</option>
+                                    <option value="3">Elective</option>
+                                </Form.Select>
+                            </Form.Group>
+                            <Form.Group controlId="formSubjectHours" className="mt-3">
+                                <Form.Label>Hours Per Week</Form.Label>
+                                <Form.Control type="number" name="hours_per_week" value={editSubject.hours_per_week} onChange={handleEditChange} />
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={saveEdit}>Save Changes</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
-
-            {/* Edit Subject Modal */}
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Edit Subject</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <input 
-                                type="text" 
-                                name="name" 
-                                placeholder="Enter Subject Name" 
-                                className="form-control" 
-                                onChange={handleChange} 
-                                value={subject.name || ''}
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <input 
-                                type="number" 
-                                name="id" 
-                                placeholder="Enter Subject Code" 
-                                className="form-control" 
-                                value={subject.id || ''}
-                                disabled
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <input 
-                                type="number" 
-                                name="semester_id" 
-                                placeholder="Enter Semester ID" 
-                                className="form-control" 
-                                onChange={handleChange} 
-                                value={subject.semester_id || ''}
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <Form.Select 
-                                aria-label="Default select example" 
-                                name="type" 
-                                onChange={handleChange} 
-                                value={subject.type || ''}
-                                required
-                            >
-                                <option value="">Select Subject Type</option>
-                                <option value="1">Lecture</option>
-                                <option value="2">Lab</option>
-                                <option value="3">Elective</option>
-                            </Form.Select>
-                        </div>
-                        <div className="mb-3">
-                            <input 
-                                type="number" 
-                                name="hours_per_week" 
-                                placeholder="Enter Hours Per Week" 
-                                className="form-control" 
-                                onChange={handleChange} 
-                                value={subject.hours_per_week || ''}
-                                required
-                            />
-                        </div>
-                        <div className='d-flex justify-content-center'>
-                            <button className="btn btn-light" type="submit">Update</button>
-                        </div>
-                    </form>
-                </Modal.Body>
-            </Modal>
         </div>
     );
 }

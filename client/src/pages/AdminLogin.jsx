@@ -8,12 +8,13 @@ import Faculty from "./Faculty";
 import Subjects from "./Subjects";
 import SubjectTable from "./SubjectTable";
 import FacultySubject from "./FacultySubject";
-import AFaculty from "./AFaculty";
+import AFaculty from "./AddFaculty";
 import AddElective from "./AddElective";
 import ViewMappings from "./ViewMappings";
 import Display from "./Display";
 import EditTimetable from "./EditTimetable";
 import FacultyDashboard from "./FacultyDashboard";
+import DisplayElectives from "./DisplayElectives";
 
 const AdminDashboard = () => {
   const { setAuthenticated, setRole } = useContext(userContext);
@@ -46,8 +47,8 @@ const AdminDashboard = () => {
             <FaBook className="icon" /> Add Subjects
           </NavLink>
 
-          <NavLink to="/admin/addElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaClipboard className="icon" /> Add Electives
+          <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+            <FaClipboard className="icon" /> Display Electives
           </NavLink>
 
           <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
@@ -89,6 +90,7 @@ const AdminDashboard = () => {
           <Route path="/display" element={<Display />} />
           <Route path="/addFaculty" element={<AFaculty />} />
           <Route path="/addElective" element={<AddElective />} />
+          <Route path="/displayElective" element={<DisplayElectives />} />
           <Route path="/viewMapping" element={<ViewMappings />} />
           <Route path="/editTimetable" element={<EditTimetable />} />
           <Route path="/displayFaculty" element={<FacultyDashboard />} />

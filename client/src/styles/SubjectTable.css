@@ -1,4 +1,3 @@
-
 .subject-container {
     display: flex;
     justify-content: center;
@@ -22,7 +21,7 @@
 }
 
 .add-subject-btn {
-    background-color: #198754;
+    background-color: #000000;
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
@@ -31,7 +30,7 @@
 }
 
 .add-subject-btn:hover {
-    background-color: #157347;
+    background-color: #2b2828;
 }
 
 .delete-mode-btn {

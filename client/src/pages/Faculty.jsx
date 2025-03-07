@@ -11,10 +11,19 @@ function Faculty() {
   const [deleteIds, setDeleteIds] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFaculty, setEditFaculty] = useState({ id: '', name: '', department: '' });
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     fetchFaculty();
   }, []);
+
+  useEffect(() => {
+    if (faculty.length > 0 && deleteIds.length === faculty.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [deleteIds, faculty]);
 
   const fetchFaculty = () => {
     fetch('http://localhost:3000/faculty')
@@ -24,23 +33,18 @@ function Faculty() {
   };
 
   const handleCheckboxChange = (id) => {
-    setDeleteIds(prev =>
-      prev.includes(id) ? prev.filter(deleteId => deleteId !== id) : [...prev, id]
+    setDeleteIds((prev) =>
+      prev.includes(id) ? prev.filter((deleteId) => deleteId !== id) : [...prev, id]
     );
   };
 
-  const confirmDelete = () => {
-    if (deleteIds.length > 0) {
-      Promise.all(deleteIds.map(id =>
-        fetch(`http://localhost:3000/deleteFaculty/${id}`, { method: 'DELETE' })
-      ))
-        .then(() => {
-          fetchFaculty(); // Refresh the faculty list after deletion
-          setDeleteIds([]);
-        })
-        .catch(error => console.error('Error deleting faculty:', error));
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setDeleteIds([]);
+    } else {
+      setDeleteIds(faculty.map((item) => item.id));
     }
-    setShowConfirmation(false);
+    setSelectAll(!selectAll);
   };
 
   const handleEdit = (faculty) => {
@@ -65,13 +69,32 @@ function Faculty() {
       .catch(error => console.error('Error updating faculty:', error));
   };
 
+  const handleDeleteSelected = () => {
+    setShowConfirmation(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteIds.length > 0) {
+      Promise.all(deleteIds.map(id =>
+        fetch(`http://localhost:3000/deleteFaculty/${id}`, {
+          method: 'DELETE',
+        })
+      ))
+        .then(() => {
+          fetchFaculty();
+          setDeleteIds([]);
+        })
+        .catch(error => console.error('Error deleting faculty:', error));
+    }
+    setShowConfirmation(false);
+  };
+
   return (
     <div className="faculty-container">
       <div className="faculty-card">
         <div className="faculty-actions">
-          <Link to="/addFaculty" className="add-faculty-btn">Add Faculty</Link>
+          <Link to="/admin/addFaculty" className="add-faculty-btn">Add Faculty</Link>
 
-          {/* ✅ Professional Toggle for Delete Mode */}
           <div className="delete-mode-toggle">
             <Form.Check
               type="switch"
@@ -90,12 +113,22 @@ function Faculty() {
               <th>Name</th>
               <th>Department</th>
               <th>Edit</th>
-              {deleteMode && <th>Select</th>}
+              {deleteMode && (
+                <th className="text-center">
+                  <span>Select All</span>
+                  <Form.Check
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="ms-2 large-checkbox"
+                  />
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
             {faculty.map((item) => (
-              <tr key={item.id} className={deleteMode ? "delete-mode-row" : ""}>
+              <tr key={item.id} className={deleteMode ? 'delete-mode-row' : ''}>
                 <td>{item.id}</td>
                 <td>{item.name}</td>
                 <td>{item.department}</td>
@@ -103,9 +136,10 @@ function Faculty() {
                   <FaPencilAlt className="edit-icon" onClick={() => handleEdit(item)} />
                 </td>
                 {deleteMode && (
-                  <td>
+                  <td className="text-center">
                     <Form.Check
                       type="checkbox"
+                      className="large-checkbox"
                       checked={deleteIds.includes(item.id)}
                       onChange={() => handleCheckboxChange(item.id)}
                     />
@@ -116,31 +150,13 @@ function Faculty() {
           </tbody>
         </Table>
 
-        {/* ✅ Floating Delete Button (Only Visible in Delete Mode) */}
         {deleteMode && (
-          <Button
-            variant="danger"
-            className="delete-fab"
-            onClick={() => setShowConfirmation(true)}
-          >
+          <Button variant="danger" className="delete-fab" onClick={handleDeleteSelected}>
             <FaTrashAlt /> Delete Selected
           </Button>
         )}
       </div>
 
-      {/* Confirmation Modal */}
-      <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete the selected faculty members?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirmation(false)}>Cancel</Button>
-          <Button variant="danger" onClick={confirmDelete}>Delete</Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Edit Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Faculty</Modal.Title>
@@ -160,6 +176,17 @@ function Faculty() {
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
           <Button variant="primary" onClick={saveEdit}>Save Changes</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete the selected faculty members?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowConfirmation(false)}>Cancel</Button>
+          <Button variant="danger" onClick={confirmDelete}>Delete</Button>
         </Modal.Footer>
       </Modal>
     </div>

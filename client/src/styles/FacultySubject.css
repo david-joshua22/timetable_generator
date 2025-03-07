@@ -1,0 +1,98 @@
+.faculty-subject-container {
+    width: calc(100% - 50px);
+    max-width: calc(100vw - 50px);
+    background-color: #e5e7eb;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.semester-selection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.semester-selection h1 {
+    font-size: 22px;
+    color: #333;
+    margin: 0;
+}
+
+.semester-dropdown select {
+    text-align: centers;
+    width: 150px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.mapping-container {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, s0.1);
+    margin-top: 20px;
+}
+
+.mapping-container h3 {
+    text-align: center;
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.selection-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.selection-grid select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 220px;
+}
+
+.submit-btn {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.submit-btn button {
+    background: #000000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.submit-btn button:hover {
+    background: #000000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .semester-selection {
+        flex-direction: column;
+    }
+
+    .selection-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .selection-grid select {
+        width: 100%;
+    }
+}

@@ -59,37 +59,3 @@ button {
 .facultyStyle{
   font-weight: bold;
 }
-
-.edit-mode-active {
-  background-color: rgba(255, 255, 0, 0.3) !important;
-  border: 2px dashed rgba(253, 0, 0, 0.998) !important;
-}
-
-.table-edit-mode {
-  border: 5px solid #e3dcdc3f !important;
-  background-color: #f9f9f9 !important;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3) !important; 
-  transition: transform 0.2s ease-in-out, z-index 0s;
-}
-
-.selected-cell {
-  position: relative;
-  z-index: 10; /* Brings the cell above others */
-  transform: scale(1.1); /* Slightly enlarges the cell */
-  transition: transform 0.2s ease-in-out, z-index 0s; /* Smooth animation */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2) !important; /* Adds a shadow effect */
-  background-color: rgb(0, 0, 0) !important;
-  color: white !important;;
-}
-
-.error{
-  font-size: 18px;
-}
-
-.error-timetable{
-  font-size: 36px;
-}
-
-.noTimetable{
-  font-size: 36px;
-}
