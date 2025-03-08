@@ -822,11 +822,34 @@ app.post('/checkCellAvailability', (req, res) => {
     });
 });
 
-app.get('/deleteData',(req,res)=>{
-    let GetSemester = req.query;
-    let semester_id = GetSemester.semester;
-    console.log(`${semester_id}`);
-})
+app.get('/deleteData',async(req,res)=>{
+    try {
+        let GetSemester = req.query;
+        let sem_id = GetSemester.semester;
+        console.log(`${sem_id}`);
+
+        const deleteQuery1 = `DELETE FROM timetable WHERE semester_id = sem_id`;
+        const deleteQuery2 = `DELETE FROM faculty_timetable WHERE semester_id = sem_id`;
+        const deleteQuery3 = `DELETE FROM elective WHERE semester_id = sem_id`;
+        const deleteQuery4 = `DELETE FROM fac_sec_map WHERE semester_id = sem_id`;
+        const deleteQuery5 = `DELETE FROM faculty_lab_mapping WHERE semester_id = sem_id`;
+
+        await Promise.all([
+            db.query(deleteQuery1, sem_id),
+            db.query(deleteQuery2, sem_id),
+            db.query(deleteQuery3, sem_id),
+            db.query(deleteQuery4, sem_id),
+            db.query(deleteQuery5, sem_id),
+        ]);
+    
+        return res.status(200).json({ message: "Deleted Succesfully" });
+
+    }
+    catch (error) {
+            console.error("Database error:", error);
+            return res.status(500).json({ error: "Internal server error" });
+            }
+    });
 
 
 app.listen(3000, () => {
