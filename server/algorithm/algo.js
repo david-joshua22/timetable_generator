@@ -1,6 +1,7 @@
 import queryDatabase from './queryDatabase.js';
 import checkClassAvailability from './checkClassAvailabilty.js';
 import checkFacultyAvailability from './checkFacultyAvailabilty.js';
+import checkLabClassAvailability from './checkLabClassAvailability.js';
 import shuffleArray from './shuffleArray.js';
 import groupElectives from './groupElectives.js';
 
@@ -217,7 +218,7 @@ async function assignElectivePeriod(fac_map, sections) {
 
 async function assignLabPeriod(lab_map) {
     try {
-        const { semester_id, section_id, subject_id, faculty_id_A, faculty_id_B, faculty_id_C, hours_per_week } = lab_map;
+        const { semester_id, section_id, subject_id, faculty_id_A, faculty_id_B, faculty_id_C, hours_per_week, lab_name } = lab_map;
         let checkAssigned = false;
         let days = shuffleArray([1, 2, 3, 4, 5]); // Shuffled weekdays
 
@@ -246,9 +247,11 @@ async function assignLabPeriod(lab_map) {
                     if (faculty_id_C) {
                         faculty_avail.push(checkFacultyAvailability(faculty_id_C, day, period));
                     }
-
+                    
                     // Add class availability check
                     faculty_avail.push(checkClassAvailability(section_id, semester_id, day, period));
+
+                    faculty_avail.push(checkLabClassAvailability(lab_name, day, period));
 
                     // Resolve all promises and validate availability
                     let availability = await Promise.all(faculty_avail);
@@ -259,7 +262,7 @@ async function assignLabPeriod(lab_map) {
                 }
 
                 if (lab_hour_count === hours_per_week) {
-                    await insertLabIntoTimetable(day, available_periods, semester_id, section_id, subject_id, faculty_id_A, faculty_id_B, faculty_id_C);
+                    await insertLabIntoTimetable(day, available_periods, semester_id, section_id, subject_id, faculty_id_A, faculty_id_B, faculty_id_C, lab_name);
                     checkAssigned = true;
                     break;
                 }
@@ -270,7 +273,7 @@ async function assignLabPeriod(lab_map) {
     }
 }
 
-async function insertLabIntoTimetable(day, periods, semester_id, section_id, subject_id, faculty_id_A, faculty_id_B = null, faculty_id_C = null) {
+async function insertLabIntoTimetable(day, periods, semester_id, section_id, subject_id, faculty_id_A, faculty_id_B = null, faculty_id_C = null, lab_name) {
     for (let period of periods) {
         await queryDatabase(
             "INSERT INTO timetable(day, time, semester_id, section_id, subject_id) VALUES(?,?,?,?,?)",
@@ -280,6 +283,11 @@ async function insertLabIntoTimetable(day, periods, semester_id, section_id, sub
         await queryDatabase(
             "INSERT INTO faculty_timetable(faculty_id, day, time, semester_id, section_id, subject_id) VALUES(?,?,?,?,?,?)",
             [faculty_id_A, day, period, semester_id, section_id, subject_id]
+        );
+
+        await queryDatabase(
+            "INSERT INTO lab_timetable(day, time, semester_id, section_id, subject_id, lab_name) VALUES(?,?,?,?,?,?)",
+            [day, period, semester_id, section_id, subject_id, lab_name]
         );
 
         if (faculty_id_B) {
