@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import ExcelJS from "exceljs";
 import {saveAs} from 'file-saver';
-import '../styles/DisplayTimetable.css';
+import '../styles/Display.css';
 
 const Display = () => {
   
@@ -221,39 +221,42 @@ const Display = () => {
 
 
     return (
-      <div className="items-center display-1">
-  <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
-    <div className="timetableHeader">
-      <h3 className='text-center'>Display TimeTable</h3>
-    </div>
+      <div className="display-1">
+        <div className="display-2">
+          <div className="timetableHeader">
+            <h3 className='text-center'>Display TimeTable</h3>
+        </div>
 
-    <div className="d-flex justify-content-center pt-1 pb-3">
-      <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto m-3">
-        <option>Select Semester</option>
-        {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-          <option key={num} value={num}>{num}</option>
-        ))}
-      </Form.Select>
+          <div className="d-flex justify-content-center pt-2">
+            <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto m-3">
+              <option>Select Semester</option>
+              {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </Form.Select>
 
-      <Form.Select onChange={(e) => setSection(e.target.value)} aria-label="Select Section" className="w-auto m-3">
-        <option>Select Section</option>
-        {['A', 'B', 'C','D','E'].map((sec) => (
-          <option key={sec} value={sec}>{sec}</option>
-        ))}
-      </Form.Select>
-    </div>
+            <Form.Select onChange={(e) => setSection(e.target.value)} aria-label="Select Section" className="w-auto m-3">
+              <option>Select Section</option>
+              {['A', 'B', 'C','D','E'].map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </Form.Select>
+          </div>
 
-    <div className="text-center">
+    <div className="text-center pb-2">
       <Button className="btn-dark text-white" onClick={() => { fetchFaculty(); fetchTimetable();if (semester >= 5) fetchElective();}}>
         VIEW
       </Button>
+        </div>
+          
+
     </div>
         {error && <p className="text-danger">{error}</p>}
 
         {showResults ? (
             timetable.length > 0 ?  (
           <div> 
-              <div className="rounded-lg shadow-md mb-6" id="timetable-container">
+              <div className="rounded-lg shadow-md mb-6 pt-2" id="timetable-container">
                 <h1>Time Table CSE -{timetable[0].semester_id} {timetable[0].section_id}</h1>
               <Table bordered ref={tableRef} className="mt-4 timetable-table">
                 <thead>
@@ -321,7 +324,7 @@ const Display = () => {
                           )
                       ))
                   ) : (
-                      <p>No elective data available.</p>
+                      <h2>No elective data available.</h2>
                   )
               ) : null}
             </div>          
@@ -338,10 +341,10 @@ const Display = () => {
                 </div>
               </div>
             </div>
-            ) : <div className="text-danger">No timetable available.</div> 
+            ) : <div className="no-info pt-2">No timetable available :(</div> 
           )  : null}
+        
       </div>
-    </div>
     )
 };
 export default Display;

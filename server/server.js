@@ -127,38 +127,19 @@ app.get('/getElectives',(req,res)=>{
 
 app.delete('/deleteElective/:compositeKey', (req, res) => {
     const compositeKey = req.params.compositeKey;
-    // Assuming the format is "semester_id-elective_section-elective_id"
-    const [semester_id, elective_section, elective_id] = compositeKey.split('-');
+    const [semester_id, elective_section, elective_id] = compositeKey.split('|');
+    console.log(semester_id, elective_section, elective_id);
 
-    if (!semester_id || !elective_section || !elective_id) {
-        console.error('Invalid composite key format:', compositeKey);
-        return res.status(400).json({ error: "Invalid composite key format" });
-    }
+    const deleteSql = `DELETE FROM elective WHERE semester_id = ? AND elective_section = ? AND elective_id = ?;`;
 
-    const checkSql = `SELECT * FROM elective WHERE semester_id = ? AND elective_section = ? AND elective_id = ?;`;
-
-    db.query(checkSql, [semester_id, elective_section, elective_id], (err, results) => {
+    db.query(deleteSql, [semester_id, elective_section, elective_id], (err, data) => {
         if (err) {
-            console.error('Error checking elective:', err);
-            return res.status(500).json({ error: err.message });
+            console.error('Error deleting elective:', err);
+            return res.status(500).json({ error: err.message, completed: false });
         }
-        
-        if (results.length === 0) {
-            return res.status(404).json({ error: "Elective not found" });
-        }
-
-        const deleteSql = `DELETE FROM elective WHERE semester_id = ? AND elective_section = ? AND elective_id = ?;`;
-
-        db.query(deleteSql, [semester_id, elective_section, elective_id], (err, data) => {
-            if (err) {
-                console.error('Error deleting elective:', err);
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: "Elective deleted successfully" });
-        });
+        res.json({ message: "Elective deleted successfully", completed: true });
     });
 });
-
 
 app.get('/viewFaculty/:id',(req,res)=>{
     const id = req.params.id;
@@ -840,6 +821,12 @@ app.post('/checkCellAvailability', (req, res) => {
         res.status(500).json({ error: "Database query failed" });
     });
 });
+
+app.get('/deleteData',(req,res)=>{
+    let GetSemester = req.query;
+    let semester_id = GetSemester.semester;
+    console.log(`${semester_id}`);
+})
 
 
 app.listen(3000, () => {

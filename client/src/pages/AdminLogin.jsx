@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
-import {FaUserPlus,FaBook,FaMapMarkedAlt,FaClipboard,FaEye} from "react-icons/fa";
+import { FaUserPlus, FaBook, FaMapMarkedAlt, FaClipboard, FaEye, FaCalendarAlt, FaChalkboardTeacher, FaEdit } from "react-icons/fa";
 import "../styles/AdminLogin.css";
 import { userContext } from "../context/UserContext";
 import Faculty from "./Faculty";
@@ -56,11 +56,11 @@ const AdminDashboard = () => {
           </NavLink>
 
           <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaEye className="icon" /> Generate Timetable
+            <FaCalendarAlt className="icon" /> Generate Timetable
           </NavLink>
 
           <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaEye className="icon" /> Faculty Timetable
+            <FaChalkboardTeacher className="icon" /> Faculty Timetable
           </NavLink>
 
           <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
 
 
           <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaEye className="icon" /> Edit Timetable
+            <FaEdit className="icon" /> Edit Timetable
           </NavLink>
 
         </nav>

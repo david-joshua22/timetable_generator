@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
 import '../styles/DFacSub.css';
+import '../styles/AddFaculty.css'
+import { FaTrashAlt } from 'react-icons/fa';
 
 function DFacSub({ selectedSemester, refreshMappings }) {
     const [mappings, setMappings] = useState([]);
@@ -152,13 +154,10 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                 </Table>
 
                 {deleteMode && selectedIds.length > 0 && (
-                    <Button
-                        variant="danger"
-                        className="mt-2"
-                        onClick={confirmDelete}
-                    >
-                        Delete Selected
-                    </Button>
+                    
+                        <Button variant="danger" className="delete-fab" onClick={confirmDelete}>
+                          <FaTrashAlt /> Delete Selected
+                        </Button>
                 )}
             </div>
         </div>

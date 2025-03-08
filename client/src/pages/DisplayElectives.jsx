@@ -59,18 +59,16 @@ function DisplayElectives() {
         prev.includes(compositeKey) ? prev.filter(key => key !== compositeKey) : [...prev, compositeKey]
     );
   };
-
   const handleSelectAll = () => {
     if (selectAll) {
         setDeleteIds([]);
     } else {
         setDeleteIds(filteredElectives.map(item => 
-            `${item.semester_id}-${item.elective_section}-${item.elective_id}`
+            `${item.semester_id}|${item.elective_section}|${item.elective_id}`
         ));
     }
     setSelectAll(!selectAll);
   };
-
   const confirmDelete = () => {
     if (deleteIds.length > 0) {
         Promise.all(deleteIds.map(compositeKey => {
@@ -89,34 +87,30 @@ function DisplayElectives() {
                 });
         }))
         .then(responses => {
-            console.log('All deletion responses:', responses);
-            // Verify all deletions were successful
-            if (responses.every(response => response.success)) {
-                console.log('Deletion successful for all selected electives');
-                fetchElectives(); // Refresh data from server
-                setDeleteIds([]);
-                setSelectAll(false);
-                setShowConfirmation(false);
-            } else {
-                throw new Error('Some deletions failed');
-            }
-        })
+          console.log('All deletion responses:', responses);
+          // Check if all deletions were successful
+          if (responses.every(response => response.completed)) {
+              fetchElectives(); // Refresh the electives list
+              setDeleteIds([]); // Clear selected items
+              setSelectAll(false); // Uncheck select all
+              setShowConfirmation(false); // Close confirmation modal
+          } else {
+              alert('Some electives could not be deleted. Please try again.');
+          }
+      })
         .catch(error => {
             console.error('Error deleting electives:', error);
             // Optionally show error to user
         });
     }
   };
-
   const handleEdit = (elective) => {
     setEditElective(elective);
     setShowEditModal(true);
   };
-
   const handleEditChange = (e) => {
     setEditElective(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
   const saveEdit = () => {
     fetch(`http://localhost:3000/updateElective/${editElective.id}`, {
       method: 'POST',
@@ -129,7 +123,6 @@ function DisplayElectives() {
       })
       .catch(error => console.error('Error updating elective:', error));
   };
-
   return (
     <div className="electives-container">
       <div className="electives-card">
@@ -182,7 +175,7 @@ function DisplayElectives() {
           </thead>
           <tbody>
             {filteredElectives.map((section) => {
-                const compositeKey = `${section.semester_id}-${section.elective_section}-${section.elective_id}`;
+                const compositeKey = `${section.semester_id}|${section.elective_section}|${section.elective_id}`;
                 return (
                     <tr key={compositeKey} className={deleteMode ? "delete-mode-row" : ""}>
                         <td>{section.semester_id}</td>

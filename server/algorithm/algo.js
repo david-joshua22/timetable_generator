@@ -223,8 +223,8 @@ async function assignLabPeriod(lab_map) {
 
         // Define period ranges based on lab hours
         const periodRanges = (hours_per_week === 3) 
-            ? [[1, 3], [4, 6]]
-            : [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]];
+            ? [[4, 6],[1,3]]
+            : [[4, 5],[5, 6],[1, 2], [2, 3], [3, 4]];
 
         for (let day of days) {
             if (checkAssigned) break;

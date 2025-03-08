@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import ExcelJS from "exceljs";
 import {saveAs} from 'file-saver';
-import '../styles/AdminLogin.css';
+import '../styles/FacultyDashboard.css';
 
 const FacultyDashboard = () => {
     const downloadPDF = () => {
@@ -161,13 +161,13 @@ const FacultyDashboard = () => {
         }
       };
     return (
-        <div className="items-center display-1">
-            <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
-                <div className="timetableHeader">
+        <div className="box-1">
+            <div className="box-2">
+                <div className="timetableHeader text-center">
                     <h3>Display TimeTable</h3>
                 </div>
     
-                <div className="d-flex justify-content-center pt-5 pb-3">
+                <div className="d-flex justify-content-center">
                     <div className='m-3 p-3'>
                         <Form.Select 
                             name="faculty"
@@ -191,7 +191,7 @@ const FacultyDashboard = () => {
                 {showResults ? (
             timetable.length > 0 ?  (
           <div> 
-              <div className="rounded-lg shadow-md mb-6 cardBox" id="timetable-container">
+              <div className="rounded-lg shadow-md mb-6 cardBox pt-3" id="timetable-container">
                 <h1>Time Table CSE - {timetable[0].faculty_name}</h1>
                 <Table bordered className="mt-4 timetable-table">
                       <thead>
@@ -253,17 +253,16 @@ const FacultyDashboard = () => {
                       </tbody>
                   </Table>
 
-            </div>          
-              <div className="text-center mt-3">
+            </div>
+
+              <div className="download-buttons">
                 <Button className="btn-dark text-white" onClick={downloadPDF}>
                   Download as PDF
                 </Button> 
+                <Button className="btn-dark text-white" onClick={handleDownloadExcel}>
+                  Download as Excel
+                </Button> 
               </div>
-              <div className='m-3'>
-                  <Button className="btn-dark text-white" onClick={handleDownloadExcel}>
-                    Download as Excel
-                  </Button> 
-                </div>
             </div>
             ) : <div className="text-danger">No timetable available.</div> 
           )  : null}

@@ -2,6 +2,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import { useEffect, useRef, useState } from "react";
+import { FaMagic, FaTrash, FaPlus } from 'react-icons/fa';
 import '../styles/DisplayTimetable.css';
 
 const EditTimetable = () => {
@@ -18,7 +19,7 @@ const EditTimetable = () => {
     const [pendingRestoreEntry, setPendingRestoreEntry] = useState(null);
     const [isAddingEntry, setIsAddingEntry] = useState(false);
     const [unavailableCells, setUnavailableCells] = useState([]); 
-    const tableRef = useRef(null); // Reference for the table
+    const tableRef = useRef(null);
 
     useEffect(() => {
         const fetchDeletedEntries = async () => {
@@ -42,7 +43,6 @@ const EditTimetable = () => {
             fetchDeletedEntries();
             fetchTimetable();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [semester, section]); 
     
     useEffect(() => {
@@ -249,6 +249,7 @@ const EditTimetable = () => {
         if (!selectedCell) return;
     
         try {
+            console.log("Deleting entry:", selectedCell); // Debugging log
             const response = await fetch('http://localhost:3000/editTimetable', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -266,8 +267,8 @@ const EditTimetable = () => {
     
             if (!response.ok) throw new Error('Failed to update timetable');
     
-            // Fetch updated deleted entries from DB
-            await fetchDeletedEntries(); // ✅ Now correctly calls the function
+            console.log("Entry deleted successfully!"); // Debugging log
+            await fetchDeletedEntries(); 
     
             // Remove from timetable
             setTimetable(prev => prev.filter(
@@ -284,8 +285,8 @@ const EditTimetable = () => {
     
 
     return (
-        <div className="items-center display-1">
-            <div className="rounded-lg shadow-md w-full max-w-4xl mb-6 cardBox">
+        <div className="display-1">
+            <div className="display-2">
                 <div className="timetableHeader">
                     <h3 className='text-center'>Edit TimeTable</h3>
                 </div>
@@ -309,19 +310,20 @@ const EditTimetable = () => {
                         <h1>Time Table CSE - {semester} {section}</h1>
                         {showResults && (
                             <div className='m-1'>
-                                <Button className="btn-warning" onClick={() => {
-                                    setEditMode(!editMode);
-                                    setManualEditMode(!editMode); // ✅ Track manual toggling
-                                }}>
-                                    {editMode ? "Exit Edit Mode" : "Edit"}
-                                </Button>
+                                <FaMagic 
+                                    className={`edit-icon ${editMode ? 'glowing' : ''}`} 
+                                    onClick={() => {
+                                        setEditMode(!editMode);
+                                        setManualEditMode(!editMode);
+                                    }}
+                                />
                             </div>
                     )}
                     </div>
                     {showSelectMessage && (
                         <div className="text-center d-flex flex-row m-2 justify-content-between">
                             <p className="text-danger text-center error">
-                                *Select the cell in the timetable to add the subject - {pendingRestoreEntry.subject_name}
+                                Select the cell in the timetable to add the subject {pendingRestoreEntry.subject_name}
                             </p>
                             {isAddingEntry && (
                                     <Button className="btn-danger" onClick={handleCancelAdd}>
@@ -363,14 +365,14 @@ const EditTimetable = () => {
                                 ))}
                             </tbody>
                         </Table>
-                        {selectedCell && <Button className="btn-danger delete-btn" onClick={handleDelete}>Delete</Button>}
+                        {selectedCell && <div className='delete-container'> <Button className="btn-danger delete-btn" onClick={handleDelete}><FaTrash /></Button></div>}
                     </div>
                 ):(showResults && timetable.length === 0 &&  (<p className='noTimetable'>No TimeTable</p>))}
                {deletedEntries.length > 0 ? (
                     <div>
                         <h2>Deleted Entries</h2>
                         <Table className='timetable-table'>
-                            <thead>
+                            <thead className='text-center'>
                                 <tr>
                                     <th>Day</th>
                                     <th>Period</th>
@@ -386,9 +388,9 @@ const EditTimetable = () => {
                                         <td>{entry.time}</td>
                                         <td>{entry.subject_name || entry.subject_id}</td>
                                         <td>{entry.faculty_name}</td>
-                                        <td>
-                                                <Button className="btn-primary m-2" onClick={() => handlePrepareForManualAdd(entry)}>
-                                                    Add
+                                        <td className='text-center'>
+                                                <Button className="add-btn btn btn-dark" onClick={() => handlePrepareForManualAdd(entry)}>
+                                                    <FaPlus />
                                                 </Button>
                                         </td>
                                     </tr>
@@ -397,7 +399,7 @@ const EditTimetable = () => {
                         </Table>
                     </div>
                 ) : showResults && timetable.length > 0 &&  (
-                    <p className="text-center text-muted error-timetable">No deleted entries found.</p>
+                    <h2 className="text-center text-black error-timetable">No deleted entries found</h2>
                 )}
 
             </div>
