@@ -19,6 +19,8 @@ import ViewMappings from "./pages/ViewMappings";
 import EditTimetable from "./pages/EditTimetable";
 import DisplayElectives from "./pages/DisplayElectives";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import AddLab from "./pages/AddLab";
+import LabTimetable from "./pages/LabTimetable";
 
 function App() {
   return (
@@ -89,10 +91,26 @@ function MainContent() {
           }
         />
         <Route
+          path="/addLab"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <AddLab />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/display"
           element={
             <ProtectedRoute roles={["admin"]}>
               <Display />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/labTimetable"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <LabTimetable />
             </ProtectedRoute>
           }
         />

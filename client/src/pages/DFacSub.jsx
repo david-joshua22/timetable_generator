@@ -95,6 +95,7 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                             <th>Subject</th>
                             <th>Class</th>
                             <th>Semester</th>
+                            <th>Lab Name</th> {/* Moved Lab Name to the end */}
                             {deleteMode && (
                                 <th className="text-center">
                                     <span>Select All</span>
@@ -116,6 +117,7 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                                 <td>{item.subject_name}</td>  
                                 <td>{item.section_id}</td>
                                 <td>{item.semester_id}</td>
+                                <td>-</td> {/* Dash for no lab name */}
                                 {deleteMode && (
                                     <td className="text-center">
                                         <Form.Check
@@ -139,6 +141,7 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                                 <td>{lab.subject_name} (Lab)</td>  
                                 <td>{lab.section_id}</td>
                                 <td>{lab.semester_id}</td>
+                                <td>{lab.lab_name || '-'}</td> {/* Display lab name or dash */}
                                 {deleteMode && (
                                     <td className="text-center">
                                         <Form.Check

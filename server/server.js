@@ -49,6 +49,94 @@ app.post('/addFaculty', (req, res) => {
     });
 });
 
+app.post('/addLab', (req, res) => {
+    const sql = "INSERT INTO labs(`lab_name`) VALUES(?)";
+    const values = [
+        req.body.lab_name
+    ];
+    
+    db.query(sql, [values], (err, data) => {
+        if (err) return res.json({ err: err.message });
+        console.log("Lab added successfully");
+        res.json({ message: "Lab added successfully" });
+    });
+});
+
+// ... existing imports ...
+
+// Get all labs
+app.get('/getLab', (req, res) => {
+    const sql = "SELECT * FROM labs";
+    db.query(sql, (err, data) => {
+        if (err) return res.json({ err: err.message });
+        res.json(data);
+    });
+});
+
+// ... existing code ...
+
+app.post('/getLabTimetable', (req, res) => {
+    const { selectedLab } = req.body;
+
+    if (!selectedLab) {
+        return res.status(400).json({ error: "Lab name is required" });
+    }
+
+    const sql = `
+        SELECT 
+            t.*,
+            subject.name AS subject_name
+        FROM lab_timetable AS t
+        INNER JOIN subject ON t.subject_id = subject.id
+        WHERE t.lab_name = ?
+        ORDER BY t.day, t.time;
+    `;
+
+    db.query(sql, [selectedLab], (err, results) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        res.json(results);
+    });
+});
+
+// ... rest of the existing code ...
+// Delete lab by ID
+// ... existing code ...
+
+// Delete lab by lab_name
+app.delete('/deleteLab', (req, res) => {
+    const lab_name = req.query.lab_name;
+    if (!lab_name) {
+        return res.status(400).json({ error: "Lab name is required" });
+    }
+    
+    const sql = "DELETE FROM labs WHERE lab_name = ?";
+    
+    db.query(sql, [lab_name], (err, data) => {
+        if (err) return res.json({ err: err.message });
+        console.log("Lab deleted successfully");
+        res.json({ message: "Lab deleted successfully" });
+    });
+});
+
+app.put('/updateLab', (req, res) => {
+    const id = req.query;
+    const sql = "UPDATE labs SET lab_name = ? WHERE lab_name = ?";
+    const values = [req.body.lab_name, id];
+    
+    db.query(sql, values, (err, data) => {
+        if (err) return res.json({ err: err.message });
+        console.log("Lab updated successfully");
+        res.json({ message: "Lab updated successfully" });
+    });
+});
+
+// ... rest of your existing code ...
+
+
 app.post('/addSubjects', (req, res) => {
     const sql = "INSERT INTO subject(`id`,`name`,`type`,`hours_per_week`,`semester_id`) VALUES(?)";
     const values = [
@@ -230,8 +318,7 @@ app.post('/mapSubFac', (req, res) => {
 });
 
 app.post('/labEntry', (req, res) => {
-
-    const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`,`faculty_id_C`) VALUES (?)";
+    const sql = "INSERT INTO faculty_lab_mapping(`semester_id`, `section_id`, `subject_id`, `faculty_id_A`, `faculty_id_B`,`faculty_id_C`, `lab_name`) VALUES (?)";
 
     const values = [
         req.body.semester,
@@ -239,7 +326,8 @@ app.post('/labEntry', (req, res) => {
         req.body.subject,
         req.body.faculty1 || null,
         req.body.faculty2 || null,
-        req.body.faculty3 && req.body.faculty3 !== 'null' ? req.body.faculty3 : null
+        req.body.faculty3 && req.body.faculty3 !== 'null' ? req.body.faculty3 : null,
+        req.body.lab_name || null
     ];
 
     db.query(sql, [values], (err, data) => {
@@ -529,6 +617,7 @@ app.get('/getLabFacSubMap', (req, res) => {
             f1.name AS faculty1_name, 
             f2.name AS faculty2_name,
             f3.name AS faculty3_name, 
+            flm.lab_name,
             s.name AS subject_name 
         FROM faculty_lab_mapping flm
         JOIN faculty f1 ON flm.faculty_id_A = f1.id
@@ -546,6 +635,54 @@ app.get('/getLabFacSubMap', (req, res) => {
         res.json(data);
     });
 });
+
+// ... existing code ...
+
+app.post('/getLabFacTime', (req, res) => {
+    const { selectedLab } = req.body;
+    
+    if (!selectedLab) {
+        return res.status(400).json({ error: 'Lab name is required' });
+    }
+
+    const sql = `
+        SELECT 
+            flm.semester_id,
+            flm.subject_id,
+            flm.section_id,
+            f1.name AS faculty_name_A, 
+            f2.name AS faculty_name_B, 
+            f3.name AS faculty_name_C
+        FROM faculty_lab_mapping flm
+        LEFT JOIN faculty f1 ON flm.faculty_id_A = f1.id
+        LEFT JOIN faculty f2 ON flm.faculty_id_B = f2.id
+        LEFT JOIN faculty f3 ON flm.faculty_id_C = f3.id
+        WHERE flm.lab_name = ?;
+    `;
+
+    db.query(sql, [selectedLab], (err, data) => {
+        if (err) {
+            console.error('Error fetching lab mappings:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // Map the data to include semester_id, subject_id, section_id, and faculty names
+        const results = data.map(item => ({
+            semester_id: item.semester_id,
+            subject_id: item.subject_id,
+            section_id: item.section_id,
+            faculty_names: [
+                item.faculty_name_A,
+                item.faculty_name_B,
+                item.faculty_name_C
+            ].filter(Boolean).join(', ')
+        }));
+
+        res.json(results);
+    });
+});
+
+// ... rest of the existing code ...
 
 
 // Delete lab faculty-subject mapping

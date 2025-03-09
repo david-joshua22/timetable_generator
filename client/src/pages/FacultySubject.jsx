@@ -17,6 +17,7 @@ function FacultySubject() {
         thirdFaculty: '',
         class: '',
     });
+    const [labs, setLabs] = useState([]);
 
     useEffect(() => {
         if (selectedSemester) {
@@ -37,6 +38,12 @@ function FacultySubject() {
             .then((response) => response.json())
             .then((data) => setFaculty(data))
             .catch((error) => console.error('Error fetching faculty data:', error));
+
+        // Fetch labs
+        fetch('http://localhost:3000/getLab')
+            .then((response) => response.json())
+            .then((data) => setLabs(data))
+            .catch((error) => console.error('Error fetching labs:', error));
     }, [selectedSemester, refreshMappings]);
 
     const handleSemesterChange = (e) => {
@@ -66,6 +73,7 @@ function FacultySubject() {
                 faculty1: selectedValues.faculty,
                 faculty2: selectedValues.secondFaculty,
                 faculty3: selectedValues.thirdFaculty,
+                lab_name: selectedValues.lab_name,
                 class: selectedValues.class,
                 semester: selectedSemester
             }
@@ -91,6 +99,7 @@ function FacultySubject() {
                     faculty: '',
                     secondFaculty: '',
                     thirdFaculty: '',
+                    lab_name: '',
                     class: ''
                 });
 
@@ -156,6 +165,13 @@ function FacultySubject() {
                                         <option value="">Select Third Faculty</option>
                                         {faculty.map((fac) => (
                                             <option key={fac.id} value={fac.id}>{fac.name}</option>
+                                        ))}
+                                    </Form.Select>
+
+                                    <Form.Select name="lab_name" value={selectedValues.lab_name} onChange={handleChange}>
+                                        <option value="">Select Lab</option>
+                                        {labs.map((lab) => (
+                                            <option key={lab.id} value={lab.lab_name}>{lab.lab_name}</option>
                                         ))}
                                     </Form.Select>
                                 </>
