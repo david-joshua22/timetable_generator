@@ -122,7 +122,6 @@ const LabTimetable = () => {
         setSelectedLab(e.target.value);
     };
     const fetchTimetable = async () => {
-        
         try {
           const response = await fetch('http://localhost:3000/getLabTimetable', {  
             method: 'POST',
@@ -144,7 +143,7 @@ const LabTimetable = () => {
       }
       const fetchClass = async () => {
         try {
-            const response = await fetch('http://localhost:3000/getLabTimetable', { 
+            const response = await fetch('http://localhost:3000/getLabFacTime', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ selectedLab }),
@@ -152,42 +151,23 @@ const LabTimetable = () => {
     
             if (!response.ok) throw new Error('Failed to fetch lab timetable');
     
-            const timetableData = await response.json();
+            const data = await response.json();
             
-            // Fetch faculty names and additional data
-            const facultyResponse = await fetch('http://localhost:3000/getLabFacTime', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ selectedLab }),
-            });
-    
-            if (!facultyResponse.ok) throw new Error('Failed to fetch faculty data');
-    
-            const facultyData = await facultyResponse.json();
-    
-            // Improved filtering logic for faculty
-            const formattedData = timetableData.map((item) => {
-                const facultyInfo = facultyData.find(faculty => 
-                    faculty.subject_id === item.subject_id &&
-                    faculty.semester_id === item.semester_id &&
-                    faculty.section_id === item.section_id
-                );
-    
-                return {
-                    ...item,
-                    faculty_names: facultyInfo ? facultyInfo.faculty_names : 'No faculty assigned'
-                };
-            });
+            // Format the data for display
+            const formattedData = data.map(item => ({
+                semester_id: item.semester_id,
+                section_id: item.section_id,
+                subject_name: item.subject_name,
+                faculty_names: item.faculty_names
+            }));
     
             setClassList(formattedData);
-            console.log('Filtered Data:', formattedData);
+            console.log('Lab Data:', formattedData);
         } catch (error) {
             console.error("Fetch error:", error);
         }
     };
-    
-    // Track printed classes
-    const printedClasses = new Set();
+
 
     return (
         <div className="box-1">
@@ -221,7 +201,7 @@ const LabTimetable = () => {
             timetable.length > 0 ?  (
           <div> 
               <div className="rounded-lg shadow-md mb-6 cardBox pt-3" id="timetable-container">
-                <h1>Time Table CSE - {timetable[0].faculty_name}</h1>
+              <h1 style={{textTransform: 'uppercase'}}>Time Table - {timetable[0].lab_name}</h1>
                 <Table bordered className="mt-4 timetable-table">
                       <thead>
                           <tr>
@@ -257,40 +237,24 @@ const LabTimetable = () => {
                   </tbody>
 
                   </Table>
-                  <Table bordered className="mt-4 timetable-table">
+                  <Table bordered className="mt-4 labTimeTable">
                       <thead>
                           <tr>
-                              <th style={{ width: '10%' }}>Class</th>  {/* Adjust width */}
-                              <th style={{ width: '35%' }}>Subject</th>  {/* Adjust width */}
-                              <th style={{ width: '55%' }}>Faculty</th>  {/* Adjust width */}
+                              <th>Semester</th>
+                              <th>Section</th>
+                              <th>Subject</th>
+                              <th>Faculty</th>
                           </tr>
                       </thead>
                       <tbody>
-                          {classList.filter(item => {
-                              const classKey = `${item.semester_id}-${item.section_id || item.elective_section_id}-${item.subject_name}`;
-                              return !printedClasses.has(classKey) && item.faculty_names;  // Ensure non-empty rows
-                          }).map((item, index) => {
-                              const classKey = `${item.semester_id}-${item.section_id || item.elective_section_id}-${item.subject_name}`;
-                              printedClasses.add(classKey);
-
-                              return (
-                                  <tr key={item.id || `${item.subject_name}-${item.semester_id}-${item.section_id || item.elective_section_id}-${index}`}>
-                                      <td>  {/* Uniform font size */}
-                                          {item.type === "Elective" && item.elective_section_id
-                                              ? `${item.semester_id} ${item.elective_section_id}`
-                                              : `${item.semester_id} ${item.section_id || ""}`}
-                                      </td>
-                                      <td className="text-uppercase">
-                                          {item.type === "Elective" && item.elective_name 
-                                              ? `${item.elective_name} (Elective)`
-                                              : item.subject_name}
-                                      </td>
-                                      <td>  {/* Uniform font size */}
-                                          {item.faculty_names}
-                                      </td>
-                                  </tr>
-                              );
-                          })}
+                          {classList.map((item, index) => (
+                              <tr key={index}>
+                                  <td>{item.semester_id}</td>
+                                  <td>{item.section_id}</td>
+                                  <td className="text-uppercase">{item.subject_name}</td>
+                                  <td>{item.faculty_names}</td>
+                              </tr>
+                          ))}
                       </tbody>
                   </Table>
 

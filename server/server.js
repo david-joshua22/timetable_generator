@@ -646,18 +646,20 @@ app.post('/getLabFacTime', (req, res) => {
     }
 
     const sql = `
-        SELECT 
-            flm.semester_id,
-            flm.subject_id,
-            flm.section_id,
-            f1.name AS faculty_name_A, 
-            f2.name AS faculty_name_B, 
-            f3.name AS faculty_name_C
-        FROM faculty_lab_mapping flm
-        LEFT JOIN faculty f1 ON flm.faculty_id_A = f1.id
-        LEFT JOIN faculty f2 ON flm.faculty_id_B = f2.id
-        LEFT JOIN faculty f3 ON flm.faculty_id_C = f3.id
-        WHERE flm.lab_name = ?;
+    SELECT 
+        flm.semester_id,
+        flm.subject_id,
+        flm.section_id,
+        f1.name AS faculty_name_A, 
+        f2.name AS faculty_name_B, 
+        f3.name AS faculty_name_C,
+        s.name AS subject_name
+    FROM faculty_lab_mapping flm
+    LEFT JOIN faculty f1 ON flm.faculty_id_A = f1.id
+    LEFT JOIN faculty f2 ON flm.faculty_id_B = f2.id
+    LEFT JOIN faculty f3 ON flm.faculty_id_C = f3.id
+    JOIN subject s ON flm.subject_id = s.id
+    WHERE flm.lab_name = ?;
     `;
 
     db.query(sql, [selectedLab], (err, data) => {
@@ -671,6 +673,7 @@ app.post('/getLabFacTime', (req, res) => {
             semester_id: item.semester_id,
             subject_id: item.subject_id,
             section_id: item.section_id,
+            subject_name : item.subject_name,
             faculty_names: [
                 item.faculty_name_A,
                 item.faculty_name_B,
