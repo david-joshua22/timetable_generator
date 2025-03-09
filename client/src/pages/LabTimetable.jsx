@@ -24,12 +24,12 @@ const LabTimetable = () => {
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
           pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight, "", "FAST");
-          pdf.save("Lab_Timetable.pdf");  // Changed from faculty_name based filename
+          pdf.save(`Lab_Timetable_${timetable[0].lab_name}.pdf`);  // Changed from faculty_name based filename
         });
       };
       const handleDownloadExcel = async () => {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Faculty Timetable');
+        const worksheet = workbook.addWorksheet('Lab Timetable');
     
         if (!timetable.length) {
             console.error("No timetable available for download.");
@@ -39,7 +39,7 @@ const LabTimetable = () => {
         // Add Main Heading
         worksheet.mergeCells('A1', 'G1');
         const titleCell = worksheet.getCell('A1');
-        titleCell.value = `Lab Timetable`;  // Removed faculty_name reference
+        titleCell.value = `Lab Timetable - ${timetable[0].lab_name}`;
         titleCell.font = { size: 16, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
     
@@ -58,7 +58,7 @@ const LabTimetable = () => {
                     const classInfo = subject.type === "Elective" && subject.elective_section_id
                         ? `${subject.semester_id} ${subject.elective_section_id}`
                         : `${subject.semester_id} ${subject.section_id || ""}`;
-                    rowData.push(`${classInfo}\n${subject.subject_name || subject.Elective_name}`);
+                    rowData.push(`${classInfo}\n${subject.subject_name || subject.elective_name}`);
                 } else {
                     rowData.push('');
                 }
@@ -69,18 +69,20 @@ const LabTimetable = () => {
         // Assigned Classes Section
         worksheet.addRow([]); // Empty row for spacing
         const assignedClassesHeader = worksheet.addRow(['Assigned Classes']);
-        worksheet.mergeCells(assignedClassesHeader.number, 1, assignedClassesHeader.number, 2);
+        worksheet.mergeCells(assignedClassesHeader.number, 1, assignedClassesHeader.number, 4);
         assignedClassesHeader.font = { bold: true };
     
         // Assigned Classes Table Headers
-        worksheet.addRow(['Subject', 'Class']);
+        worksheet.addRow(['Semester', 'Section', 'Subject', 'Faculty']);
     
         // Add Assigned Classes Data
         classList.forEach((item) => {
-            const classInfo = item.type === "Elective" && item.elective_section_id
-                ? `${item.semester_id} ${item.elective_section_id}`
-                : `${item.semester_id} ${item.section_id || ""}`;
-            worksheet.addRow([item.subject_name || item.Elective_name, classInfo]);
+            worksheet.addRow([
+                item.semester_id,
+                item.section_id,
+                item.subject_name,
+                item.faculty_names
+            ]);
         });
     
         // Apply border and alignment
@@ -99,7 +101,7 @@ const LabTimetable = () => {
         // Generate and download the Excel file
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `Faculty_Timetable-${timetable[0].faculty_name}.xlsx`);
+        saveAs(blob, `Lab_Timetable_${timetable[0].lab_name}.xlsx`);
     };
     
     

@@ -32,53 +32,54 @@ const AdminDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="sidebar">
+      <div className="sidebar" style={{ width: '300px' }}>
         <h1 className="sidebar-title">Welcome Admin!</h1>
 
         <nav className="menu">
-          {/* Add 'end' to prevent highlighting on subroutes */}          
-          
+          <div className="handleOverflow" style={{ width: '100%' }}>
+            {/* Add 'end' to prevent highlighting on subroutes */}          
+            
+            <NavLink to="/admin/faculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaUserPlus className="icon" /> Add Faculty
+            </NavLink>
 
-          <NavLink to="/admin/faculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaUserPlus className="icon" /> Add Faculty
-          </NavLink>
+            <NavLink to="/admin/subjects" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaBook className="icon" /> Add Subjects
+            </NavLink>
 
-          <NavLink to="/admin/subjects" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaBook className="icon" /> Add Subjects
-          </NavLink>
+            <NavLink to="/admin/addLab" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaBook className="icon" /> Add Lab
+            </NavLink>
 
-          <NavLink to="/admin/addLab" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaBook className="icon" /> Add Lab
-          </NavLink>
+            <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaClipboard className="icon" /> Display Electives
+            </NavLink>
 
-          <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaClipboard className="icon" /> Display Electives
-          </NavLink>
+            <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaMapMarkedAlt className="icon" /> Map Faculty-Subject
+            </NavLink>
 
-          <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaMapMarkedAlt className="icon" /> Map Faculty-Subject
-          </NavLink>
+            <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaCalendarAlt className="icon" /> Generate Timetable
+            </NavLink>
 
-          <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaCalendarAlt className="icon" /> Generate Timetable
-          </NavLink>
+            <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaChalkboardTeacher className="icon" /> Faculty Timetable
+            </NavLink>
 
-          <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaChalkboardTeacher className="icon" /> Faculty Timetable
-          </NavLink>
+            <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaChalkboardTeacher className="icon" /> Lab Timetable
+            </NavLink>
 
-          <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaChalkboardTeacher className="icon" /> Lab Timetable
-          </NavLink>
-
-          <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaEye className="icon" /> View Timetable
-          </NavLink>
+            <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaEye className="icon" /> View Timetable
+            </NavLink>
 
 
-          <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-            <FaEdit className="icon" /> Edit Timetable
-          </NavLink>
+            <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+              <FaEdit className="icon" /> Edit Timetable
+            </NavLink>
+          </div>
 
         </nav>
 

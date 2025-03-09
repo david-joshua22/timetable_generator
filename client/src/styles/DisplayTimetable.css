@@ -131,3 +131,27 @@ button {
   background-color: rgb(0, 0, 0) !important;
   color: rgb(255, 255, 255) !important;
 }
+
+.timetable-table {
+  border: 2px solid black !important; /* Reverted to 2px */
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.timetable-table th,
+.timetable-table td {
+  border: 2px solid black !important; /* Reverted to 2px */
+  padding: 8px;
+  text-align: center;
+}
+
+.labTimeTable {
+  border: 2px solid black !important; /* Reverted to 2px */
+  width: 100%;
+}
+
+.timetable-table thead th,
+.labTimeTable thead th {
+  border: 2px solid black !important; /* Reverted to 2px */
+  background-color: #f2f2f2;
+}
