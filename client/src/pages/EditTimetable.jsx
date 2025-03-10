@@ -357,7 +357,11 @@ const EditTimetable = () => {
                                                     className={`clickable-cell ${selectedCell?.day === dayKey && selectedCell?.time === (periodIndex + 1) ? "selected-cell" : ""} ${isUnavailable ? "unavailable-cell" : ""}`}
                                                     style={{ cursor: editMode && !isUnavailable ? 'pointer' : 'not-allowed', backgroundColor: isUnavailable ? 'lightgray' : 'inherit' }}
                                                 >
-                                                    {subject ? subject.name : ""}
+                                                    {subject ? (
+                                                            subject.name.includes('(') && subject.name.includes(')')
+                                                                ? subject.name.match(/\(([^)]+)\)/)[1]
+                                                                : subject.name
+                                                        ) : ""}
                                                 </td>
                                             );
                                         })}

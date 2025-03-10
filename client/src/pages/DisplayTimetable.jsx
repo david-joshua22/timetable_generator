@@ -54,7 +54,11 @@ const Display = () => {
         const rowData = [days[day]];
         periods.forEach((time) => {
             const subject = timetable.find((item) => item.day === day && item.time === time);
-            rowData.push(subject ? subject.name : '');
+            rowData.push(subject ? (
+                subject.name.includes('(') && subject.name.includes(')')
+                    ? subject.name.match(/\(([^)]+)\)/)[1]
+                    : subject.name
+            ) : '');
         });
         worksheet.addRow(rowData);
     });
@@ -271,12 +275,18 @@ const Display = () => {
                 <tbody>
                   {[1, 2, 3, 4, 5].map((day) => (
                     <tr key={day}>
-                      <td className='days colorChange'>{days[day]}</td>
-                      {[1, 2, 3, 4, 5, 6].map((time) => {
+                    <td className='days colorChange'>{days[day]}</td>
+                    {[1, 2, 3, 4, 5, 6].map((time) => {
                         const subject = timetable.find((item) => item.day === day && item.time === time);
-                        return <td key={time}>{subject ? subject.name : ""}</td>;
-                      })}
-                    </tr>
+                        return <td key={time}>
+                                {subject ? (
+                                    subject.name.includes('(') && subject.name.includes(')')
+                                        ? subject.name.match(/\(([^)]+)\)/)[1]
+                                        : subject.name
+                                ) : ''}
+                            </td>;
+                    })}
+                </tr>
                   ))}
                 </tbody>
               </Table>

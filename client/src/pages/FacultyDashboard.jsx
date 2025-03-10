@@ -58,7 +58,11 @@ const FacultyDashboard = () => {
                     const classInfo = subject.type === "Elective" && subject.elective_section_id
                         ? `${subject.semester_id} ${subject.elective_section_id}`
                         : `${subject.semester_id} ${subject.section_id || ""}`;
-                    rowData.push(`${classInfo}\n${subject.subject_name || subject.Elective_name}`);
+                    const subjectName = subject.subject_name || subject.elective_name;
+                    const displayName = subjectName.includes('(') && subjectName.includes(')')
+                        ? subjectName.match(/\(([^)]+)\)/)[1]
+                        : subjectName;
+                    rowData.push(`${classInfo}\n${displayName}`);
                 } else {
                     rowData.push('');
                 }
@@ -209,18 +213,26 @@ const FacultyDashboard = () => {
                               {[1, 2, 3, 4, 5, 6].map((time) => {
                                   const subject = timetable.find((item) => item.day === day && item.time === time);
                                   return (
-                                      <td key={`${day}-${time}`}>  {/* Ensure unique key */}
-                                          {subject ? (
-                                              <div className='text-uppercase'>
-                                                  <span className='facultyStyle'>
-                                                      {subject.type === 'Elective' && subject.elective_section_id
-                                                          ? `${subject.semester_id} ${subject.elective_section_id} - ${subject.elective_name}`
-                                                          : `${subject.semester_id} ${subject.section_id || ""} - ${subject.subject_name}`
-                                                      }
-                                                  </span>
-                                              </div>
-                                          ) : ""}
-                                      </td>
+                                    <td key={`${day}-${time}`}>
+                                    {subject ? (
+                                        <div className='text-uppercase'>
+                                            <span className='facultyStyle'>
+                                            {subject.elective_name
+                                                ? `${subject.semester_id} ${subject.section_id || subject.elective_section_id} - ${
+                                                    subject.elective_name.includes('(') && subject.elective_name.includes(')')
+                                                        ? subject.elective_name.match(/\(([^)]+)\)/)[1]
+                                                        : subject.elective_name
+                                                }`
+                                                : `${subject.semester_id} ${subject.section_id || ""} - ${
+                                                    subject.subject_name.includes('(') && subject.subject_name.includes(')')
+                                                        ? subject.subject_name.match(/\(([^)]+)\)/)[1]
+                                                        : subject.subject_name
+                                                }`
+                                            }
+                                        </span>
+                                        </div>
+                                    ) : ""}
+                                </td>
                                   );
                               })}
                           </tr>

@@ -401,36 +401,78 @@ app.post('/getFacultyTimetable', (req, res) => {
 app.post('/getClassFaculty', (req, res) => {
     const { selectedFaculty } = req.body;
 
-    const sql = `SELECT 
-    t.semester_id, 
-    t.section_id, 
-    t.elective_section_id,
-    subject.name AS subject_name, 
-    faculty.name AS faculty_name, 
-    (SELECT elective.elective_name 
-     FROM elective 
-     WHERE elective.faculty_id = t.faculty_id 
-     LIMIT 1) AS elective_name,  -- Select only one elective_name
-    t.*,  
-    subject.type
-FROM faculty_timetable AS t
-INNER JOIN subject ON t.subject_id = subject.id
-INNER JOIN faculty ON t.faculty_id = faculty.id
-WHERE t.faculty_id = ?
-GROUP BY t.semester_id, t.section_id, t.elective_section_id, t.subject_id, t.faculty_id, subject.name, faculty.name, subject.type
-ORDER BY t.semester_id, t.section_id, t.elective_section_id;
-                    `;
+    const query1 = `
+        SELECT 
+            fac_sec_map.semester_id,
+            fac_sec_map.section_id,
+            fac_sec_map.subject_id,
+            subject.name AS subject_name
+        FROM fac_sec_map
+        INNER JOIN subject ON fac_sec_map.subject_id = subject.id
+        WHERE fac_sec_map.faculty_id = ?;
+    `;
 
-    db.query(sql, [selectedFaculty], (err, results) => {
-        if (err) {
-            console.error("Database error:", err); // Log error
-            return res.status(500).json({ error: err.message });
-        }
-        
-        res.json(results);
+    const query2 = `
+        SELECT 
+            elective.semester_id,
+            elective.elective_section AS section_id,
+            elective.elective_subject_id AS subject_id,
+            elective.elective_name,
+            subject.name AS subject_name
+        FROM elective
+        INNER JOIN subject ON elective.elective_id = subject.id
+        WHERE elective.faculty_id = ?;
+    `;
+
+    const query3 = `
+        SELECT 
+            faculty_lab_mapping.semester_id,
+            faculty_lab_mapping.section_id,
+            faculty_lab_mapping.subject_id,
+            subject.name AS subject_name
+        FROM faculty_lab_mapping
+        INNER JOIN subject ON faculty_lab_mapping.subject_id = subject.id
+        WHERE ? IN (faculty_lab_mapping.faculty_id_A, faculty_lab_mapping.faculty_id_B, faculty_lab_mapping.faculty_id_C)
+        ORDER BY semester_id;
+    `;
+
+    Promise.all([
+        new Promise((resolve, reject) => {
+            db.query(query1, [selectedFaculty], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        }),
+        new Promise((resolve, reject) => {
+            db.query(query2, [selectedFaculty], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        }),
+        new Promise((resolve, reject) => {
+            db.query(query3, [selectedFaculty], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        })
+    ])
+    .then(([theoryResults, electiveResults, labResults]) => {
+        const combinedResults = [
+            ...theoryResults,
+            ...electiveResults.map(item => ({
+                ...item,
+                subject_name: item.elective_name || item.subject_name
+            })),
+            ...labResults
+        ];
+        console.log("Combined Results:", combinedResults);
+        res.json(combinedResults);
+    })
+    .catch(err => {
+        console.error("Database error:", err);
+        res.status(500).json({ error: err.message });
     });
 });
-
 
 app.post('/getFacOfClass', (req, res) => {
     const { semester, section } = req.body;

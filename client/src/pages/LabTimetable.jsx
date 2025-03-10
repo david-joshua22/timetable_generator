@@ -58,7 +58,11 @@ const LabTimetable = () => {
                     const classInfo = subject.type === "Elective" && subject.elective_section_id
                         ? `${subject.semester_id} ${subject.elective_section_id}`
                         : `${subject.semester_id} ${subject.section_id || ""}`;
-                    rowData.push(`${classInfo}\n${subject.subject_name || subject.elective_name}`);
+                    const subjectName = subject.subject_name || subject.elective_name;
+                    const displayName = subjectName.includes('(') && subjectName.includes(')')
+                        ? subjectName.match(/\(([^)]+)\)/)[1]
+                        : subjectName;
+                    rowData.push(`${classInfo}\n${displayName}`);
                 } else {
                     rowData.push('');
                 }
@@ -224,11 +228,19 @@ const LabTimetable = () => {
                                           {subject ? (
                                               <div className='text-uppercase'>
                                                   <span className='facultyStyle'>
-                                                      {subject.type === 'Elective' && subject.elective_section_id
-                                                          ? `${subject.semester_id} ${subject.elective_section_id} - ${subject.elective_name}`
-                                                          : `${subject.semester_id} ${subject.section_id || ""} - ${subject.subject_name}`
-                                                      }
-                                                  </span>
+                                                    {subject.type === 'Elective' && subject.elective_section_id
+                                                        ? `${subject.semester_id} ${subject.elective_section_id} - ${
+                                                            subject.elective_name.includes('(') && subject.elective_name.includes(')')
+                                                                ? subject.elective_name.match(/\(([^)]+)\)/)[1]
+                                                                : subject.elective_name
+                                                        }`
+                                                        : `${subject.semester_id} ${subject.section_id || ""} - ${
+                                                            subject.subject_name.includes('(') && subject.subject_name.includes(')')
+                                                                ? subject.subject_name.match(/\(([^)]+)\)/)[1]
+                                                                : subject.subject_name
+                                                        }`
+                                                    }
+                                                </span>
                                               </div>
                                           ) : ""}
                                       </td>
