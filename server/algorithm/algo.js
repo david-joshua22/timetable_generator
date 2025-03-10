@@ -74,7 +74,7 @@ async function assignElectivePeriod(fac_map, sections) {
                 }
    
                 if (assigned_hours < hours_per_week) {
-                    console.log(`⚠️ Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
+                    console.log(`Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
                 }
             }
         }
@@ -157,7 +157,7 @@ async function assignElectivePeriod(fac_map, sections) {
                 }
        
                 if (assigned_hours < hours_per_week) {
-                    console.log(`⚠️ Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
+                    console.log(` Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
                 }
             }
         }
@@ -207,12 +207,12 @@ async function assignElectivePeriod(fac_map, sections) {
                 }
    
                 if (assigned_hours < hours_per_week) {
-                    console.log(`⚠️ Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
+                    console.log(`Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
                 }
             }
         }
     } catch (err) {
-        console.error('❌ Error in assignElectivePeriod:', err);
+        console.error('Error in assignElectivePeriod:', err);
     }
 }
 
@@ -359,7 +359,7 @@ async function assignLecturePeriod(fac_map) {
         }
 
         if (assigned_hours < hours) {
-            console.log(`⚠️ Not all hours could be assigned for Subject: ${fac_map.name} (ID: ${fac_map.subject_id})`);
+            console.log(`Not all hours could be assigned for Subject: ${fac_map.name} (ID: ${fac_map.subject_id})`);
         }
     } catch (err) {
         console.error('Error in assignLecturePeriod:', err);

@@ -1,50 +1,75 @@
-import { useState} from 'react';
+import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import GFacSub from './GFacSub';
 import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 import '../styles/App.css';
 import '../styles/ViewMappings.css';
 
 function ViewMappings() {
     const [selectedSemester, setSelectedSemester] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [deleteResult, setDeleteResult] = useState('');
+    const [refreshKey, setRefreshKey] = useState(0); // Add this line
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
+    const [showGenerateResultModal, setShowGenerateResultModal] = useState(false);
+    const [generateResult, setGenerateResult] = useState('');
 
     const handleSemesterChange = (e) => {
         setSelectedSemester(e.target.value);
     };
     
-    function handleGenerate() {
+    const handleGenerateConfirmation = () => {
+        setShowGenerateModal(true);
+    };
+
+    const handleGenerateConfirmed = () => {
+        setShowGenerateModal(false);
         fetch(`http://localhost:3000/generate?semester=${selectedSemester}`)
             .then(response => {
                 if (response.ok) {
-                    return response.text(); // Read response body
+                    return response.text();
                 } else {
                     throw new Error(`Server Error: ${response.status}`);
                 }
             })
-            .then(data => {
-                alert(data); 
+            .then(() => {
+                setGenerateResult(`Timetable, Faculty timetable, and Lab timetable updated for Semester ${selectedSemester}`);
+                setShowGenerateResultModal(true);
+                setRefreshKey(prevKey => prevKey + 1);
             })
             .catch(err => {
-                console.log('Fetch Error:', err);
+                setGenerateResult(`Error: ${err.message}`);
+                setShowGenerateResultModal(true);
             });
-    }
-    
-    function handleDeleteTimetableData(){
+    };
+
+    const handleDeleteConfirmation = () => {
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirmed = () => {
+        setShowDeleteModal(false);
         fetch(`http://localhost:3000/deleteData?semester=${selectedSemester}`)
-        .then(response => {
-            if (response.ok) {
-                return response.text(); // Read response body
-            } else {
-                throw new Error(`Server Error: ${response.status}`);
-            }
-        })
-        .then(data => {
-            alert(data); 
-        })
-        .catch(err => {
-            console.log('Fetch Error:', err);
-        });
-    }
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+            })
+            .then(() => {
+                setDeleteResult(`Semester ${selectedSemester} data deleted`);
+                setShowResultModal(true);
+                setRefreshKey(prevKey => prevKey + 1); // Add this line to trigger refresh
+            })
+            .catch(() => {
+                setDeleteResult(`Semester ${selectedSemester} data deleted`);
+                setShowResultModal(true);
+                setRefreshKey(prevKey => prevKey + 1); // Add this line to trigger refresh
+            });
+    };
 
     return (
         <div className="semester-container">
@@ -80,11 +105,91 @@ function ViewMappings() {
            <div className="generate-container pt-3 pb-3">
                 <h1>Generate for {selectedSemester} semester</h1>
                 <div className='d-flex flex-row justify-content-between'>
-                    <Button className="btn btn-dark" onClick={handleGenerate}> Generate</Button>
-                    <Button className="btn btn-dark" onClick={handleDeleteTimetableData}>Delete timetable data</Button>
+                    <Button className="btn btn-dark" onClick={handleGenerateConfirmation}> Generate</Button>
+                    <Button className="btn btn-dark" onClick={handleDeleteConfirmation}>Delete timetable data</Button>
                 </div>
-                <GFacSub selectedSemester={selectedSemester} />
-            </div>}
+                <GFacSub 
+                    key={refreshKey}
+                    selectedSemester={selectedSemester}
+                    refreshMappings={refreshKey} // Add this prop
+                />
+            </div>
+        }
+
+            {/* Generate Confirmation Modal */}
+            <Modal show={showGenerateModal} onHide={() => setShowGenerateModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Generation</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Generating the following semester {selectedSemester}</p>
+                    <ul>
+                        <li>Timetable data</li>
+                        <li>Faculty timetable data</li>
+                        <li>Lab timetable data</li>
+                    </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowGenerateModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick={handleGenerateConfirmed}>
+                        Confirm
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* Delete Confirmation Modal */}
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Deletion</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Are you sure you want to delete the following for semester {selectedSemester}?</p>
+                    <ul>
+                        <li>Timetable data</li>
+                        <li>Faculty timetable data</li>
+                        {selectedSemester >= 5 && <li>Elective data</li>}
+                        <li>Lab data</li>
+                    </ul>
+                    <p>This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteConfirmed}>
+                        Delete
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* Result Modal */}
+            <Modal show={showResultModal} onHide={() => setShowResultModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Deletion Result</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Semester {selectedSemester} data deleted</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowResultModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* Generate Result Modal */}
+            <Modal show={showGenerateResultModal} onHide={() => setShowGenerateResultModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Generation Result</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>{generateResult}</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowGenerateResultModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

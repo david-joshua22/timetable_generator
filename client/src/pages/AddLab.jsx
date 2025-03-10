@@ -1,43 +1,31 @@
-// Remove unused import
 import { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import { FaTrashAlt } from 'react-icons/fa';
+import { FaPencil } from 'react-icons/fa6';
 
 function AddLab() {
     const [lab, setLab] = useState({ lab_name: ''});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState(null);
     const [labs, setLabs] = useState([]);
     const [deleteMode, setDeleteMode] = useState(false);
-    // Remove: const [editMode, setEditMode] = useState(false);
-    // Remove: const [currentLab, setCurrentLab] = useState(null);
-
+    const [editMode, setEditMode] = useState(false);
+    const [currentLab, setCurrentLab] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [labToDelete, setLabToDelete] = useState(null);
 
     useEffect(() => {
-        console.log("Fetching labs..."); // Debug log
         fetchLabs();
     }, []);
 
     const fetchLabs = () => {
-        console.log("Inside fetchLabs"); // Debug log
         fetch('http://localhost:3000/getLab')
-            .then(response => {
-                console.log("Response received:", response); // Debug log
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Labs data:", data); // Debug log
-                setLabs(data);
-            })
-            .catch(error => {
-                console.error('Error fetching labs:', error);
-                setError('Failed to fetch labs. Please try again.');
-            });
+            .then(response => response.json())
+            .then(data => setLabs(data));
     };
 
     const handleChange = (e) => {
@@ -48,50 +36,97 @@ function AddLab() {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        setSuccess(false);
 
         fetch('http://localhost:3000/addLab', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lab)
         })
         .then(response => response.json())
-        .then(() => {  // Remove unused data parameter
+        .then(() => {
             setLoading(false);
-            setSuccess(true);
             setLab({ lab_name: '' });
             fetchLabs();
+            setSuccessMessage('Lab added successfully!');
         })
-        .catch(error => {
+        .catch(() => {
             setLoading(false);
             setError('There was an error adding the lab.');
-            console.error('Error:', error);
         });
     };
 
-    const handleDelete = (labName) => {
-        fetch(`http://localhost:3000/deleteLab?lab_name=${encodeURIComponent(labName)}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(() => {  // Remove unused data parameter
-            fetchLabs();
-        })
-        .catch(error => console.error('Error deleting lab:', error));
+    const confirmDelete = (labName) => {
+        setLabToDelete(labName);
+        setShowDeleteConfirm(true);
     };
 
-    // Remove handleEdit and handleUpdate functions
+    const handleDelete = () => {
+        if (!labToDelete) return;
+        fetch(`http://localhost:3000/deleteLab?lab_name=${encodeURIComponent(labToDelete)}`, {
+            method: 'DELETE'
+        })
+        .then(() => {
+            fetchLabs();
+            setSuccessMessage('Lab deleted successfully!');
+            setShowDeleteConfirm(false);
+            setLabToDelete(null);
+        })
+        .catch(() => setError('Error deleting lab'));
+    };
+
+    const handleEdit = (lab) => {
+        setCurrentLab(lab);
+        setEditMode(true);
+        setLab({ lab_name: lab.lab_name });
+    };
+
+    const handleUpdate = () => {
+        fetch('http://localhost:3000/updateLab', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_lab_name: currentLab.lab_name, new_lab_name: lab.lab_name })
+        })
+        .then(() => {
+            setEditMode(false);
+            setCurrentLab(null);
+            setLab({ lab_name: '' });
+            fetchLabs();
+            setSuccessMessage('Lab updated successfully!');
+        })
+        .catch(() => setError('Error updating lab'));
+    };
 
     return (
         <div>
+            <Modal show={!!successMessage} onHide={() => setSuccessMessage(null)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Success</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{successMessage}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={() => setSuccessMessage(null)}>OK</Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Delete</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Are you sure you want to delete {labToDelete}?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                    <Button variant="danger" onClick={handleDelete}>Delete</Button>
+                </Modal.Footer>
+            </Modal>
+
             <div className="d-flex justify-content-center pt-5">
                 <div className="w-50 rounded faculty p-3">
                     <h1 className="text-center text-dark">Enter Lab Name</h1>
                     {error && <div className="alert alert-danger">{error}</div>}
-                    {success && <div className="alert alert-success">Lab added successfully!</div>}
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        editMode ? handleUpdate() : handleSubmit(e);
+                    }}>
                         <div className="mb-2">
                             <input 
                                 type="text" 
@@ -103,11 +138,23 @@ function AddLab() {
                                 required 
                             />
                         </div>
-                        
                         <div className="d-flex justify-content-center">
                             <button className="btn btn-dark" type="submit" disabled={loading}>
-                                {loading ? 'Submitting...' : 'Submit'}
+                                {loading ? 'Submitting...' : (editMode ? 'Update' : 'Submit')}
                             </button>
+                            {editMode && (
+                                <button 
+                                    className="btn btn-secondary ms-2" 
+                                    type="button"
+                                    onClick={() => {
+                                        setEditMode(false);
+                                        setCurrentLab(null);
+                                        setLab({ lab_name: '' });
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            )}
                         </div>
                     </form>
                 </div>
@@ -115,34 +162,40 @@ function AddLab() {
 
             <div className="faculty-container mt-4">
                 <div className="faculty-card">
-                    <div className="faculty-actions">
-                        <div className="delete-mode-toggle">
-                            <Form.Check
-                                type="switch"
-                                id="delete-mode-switch"
-                                label="Enable Delete Mode"
-                                checked={deleteMode}
-                                onChange={() => setDeleteMode(!deleteMode)}
-                            />
-                        </div>
+                    <div className="faculty-actions d-flex justify-content-end">
+                        <Form.Check
+                            type="switch"
+                            id="delete-mode-switch"
+                            label="Enable Delete Mode"
+                            checked={deleteMode}
+                            onChange={() => setDeleteMode(!deleteMode)}
+                        />
                     </div>
 
-                    <Table striped bordered hover className="faculty-table">
+                    <Table striped bordered hover className="w-100">
                         <thead>
                             <tr>
-                                <th>Lab Name</th>
-                                {deleteMode && <th>Delete</th>}
+                                <th className="w-50">Lab Name</th>
+                                <th className="w-25">Actions</th>
+                                {deleteMode && <th className="w-25">Delete</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {labs.map((item) => (
                                 <tr key={item.id}>
-                                    <td>{item.lab_name}</td>
+                                    <td className="w-50">{item.lab_name}</td>
+                                    <td className="w-25">
+                                        <FaPencil 
+                                            className="edit-icon me-2" 
+                                            onClick={() => handleEdit(item)}
+                                            style={{ cursor: 'pointer', color: 'blue' }}
+                                        />
+                                    </td>
                                     {deleteMode && (
-                                        <td className="text-center">
+                                        <td className="w-25 text-center">
                                             <FaTrashAlt 
                                                 className="delete-icon" 
-                                                onClick={() => handleDelete(item.lab_name)}
+                                                onClick={() => confirmDelete(item.lab_name)}
                                                 style={{ cursor: 'pointer', color: 'red' }}
                                             />
                                         </td>

@@ -11,7 +11,7 @@ import AFaculty from "./pages/AddFaculty";
 import FacultySubject from "./pages/FacultySubject";
 import SubjectTable from "./pages/SubjectTable";
 import Subjects from "./pages/Subjects";
-import Display from "./pages/Display";
+import Display from "./pages/DisplayTimetable";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentLogin from "./pages/StudentLogin";
 import AddElective from "./pages/AddElective";

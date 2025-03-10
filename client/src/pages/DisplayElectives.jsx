@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Modal, Table, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaTrashAlt } from 'react-icons/fa';
 import '../styles/DisplayElectives.css';
 
 function DisplayElectives() {
@@ -12,17 +12,6 @@ function DisplayElectives() {
   const [deleteIds, setDeleteIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editElective, setEditElective] = useState({
-    id: '',
-    semester_id: '',
-    elective_id: '',
-    elective_subject_id: '',
-    elective_name: '',
-    elective_section: '',
-    faculty_id: '',
-    hours_per_week: ''
-  });
 
   useEffect(() => {
     fetchElectives();
@@ -104,25 +93,7 @@ function DisplayElectives() {
         });
     }
   };
-  const handleEdit = (elective) => {
-    setEditElective(elective);
-    setShowEditModal(true);
-  };
-  const handleEditChange = (e) => {
-    setEditElective(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-  const saveEdit = () => {
-    fetch(`http://localhost:3000/updateElective/${editElective.id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editElective)
-    })
-      .then(() => {
-        fetchElectives();
-        setShowEditModal(false);
-      })
-      .catch(error => console.error('Error updating elective:', error));
-  };
+
   return (
     <div className="electives-container">
       <div className="electives-card">
@@ -149,7 +120,7 @@ function DisplayElectives() {
                 <Form.Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
                   <option value="">All Semesters</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(semester => (
-                    <option key={semester} value={semester}>{semester}</option>
+                    <option key={semester} value={semester}>Semester {semester}</option>
                   ))}
                 </Form.Select>
               </th>
@@ -159,7 +130,7 @@ function DisplayElectives() {
               <th>Elective Section</th>
               <th>Faculty ID</th>
               <th>Hours per Week</th>
-              <th>Edit</th>
+              {/* // Remove the Edit column header */}
               {deleteMode && (
                 <th className="text-center">
                   <span>Select All</span>
@@ -185,9 +156,7 @@ function DisplayElectives() {
                         <td>{section.elective_section}</td>
                         <td>{section.faculty_id || 'N/A'}</td>
                         <td>{section.hours_per_week}</td>
-                        <td>
-                          <FaPencilAlt className="edit-icon" onClick={() => handleEdit(section)} />
-                        </td>
+                        {/* // Remove the edit icon cell */}
                         {deleteMode && (
                             <td className="text-center">
                                 <Form.Check
@@ -227,24 +196,6 @@ function DisplayElectives() {
           </Modal.Footer>
         </Modal>
 
-        {/* Edit Modal */}
-        <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Edit Elective</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group>
-                <Form.Label>Elective Name</Form.Label>
-                <Form.Control type="text" name="elective_name" value={editElective.elective_name} onChange={handleEditChange} />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={saveEdit}>Save Changes</Button>
-          </Modal.Footer>
-        </Modal>
       </div>
     </div>
   );

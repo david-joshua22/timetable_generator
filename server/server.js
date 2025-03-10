@@ -26,11 +26,16 @@ app.get('/faculty', (req, res) => {
 });
 
 app.get('/subjects', (req, res) => {
-    const sql = "SELECT * FROM subject order by semester_id";
-    db.query(sql, (err, data) => {
+    const { semester } = req.query;
+    let sql = "SELECT * FROM subject";
+    
+    if (semester && semester !== 'all') {
+        sql += " WHERE semester_id = ?";
+    }
+
+    db.query(sql, semester !== 'all' ? [semester] : [], (err, data) => {
         if (err) return res.json({ err: err.message });
         res.json(data);
-        
     });
 });
 
@@ -123,9 +128,14 @@ app.delete('/deleteLab', (req, res) => {
 });
 
 app.put('/updateLab', (req, res) => {
-    const id = req.query;
+    const { old_lab_name,new_lab_name } = req.body;
+    
+    if (!old_lab_name || !new_lab_name) {
+        return res.status(400).json({ error: "Both old and new lab names are required" });
+    }
+
     const sql = "UPDATE labs SET lab_name = ? WHERE lab_name = ?";
-    const values = [req.body.lab_name, id];
+    const values = [new_lab_name, old_lab_name];
     
     db.query(sql, values, (err, data) => {
         if (err) return res.json({ err: err.message });
@@ -862,9 +872,9 @@ app.post('/getDeletedEntries', (req, res) => {
                 return res.status(500).json({ error: "Database query failed" });
             }
 
-            console.log("Deleted Entries Retrieved:", results); // ✅ Debugging Log
+            console.log("Deleted Entries Retrieved:", results); // Debugging Log
 
-            // ✅ Instead of 404, return an empty array if no results are found
+            // Instead of 404, return an empty array if no results are found
             return res.status(200).json(results || []);
         });
 

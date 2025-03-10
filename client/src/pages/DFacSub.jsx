@@ -1,10 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
 import '../styles/DFacSub.css';
-import '../styles/AddFaculty.css'
+import '../styles/AddFaculty.css';
 import { FaTrashAlt } from 'react-icons/fa';
+import Modal from 'react-bootstrap/Modal';
 
 function DFacSub({ selectedSemester, refreshMappings }) {
     const [mappings, setMappings] = useState([]);
@@ -12,6 +12,7 @@ function DFacSub({ selectedSemester, refreshMappings }) {
     const [deleteMode, setDeleteMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         if (selectedSemester) {
@@ -21,25 +22,21 @@ function DFacSub({ selectedSemester, refreshMappings }) {
     }, [selectedSemester, refreshMappings]);
 
     useEffect(() => {
-        if (mappings.length + labMappings.length > 0 && selectedIds.length === mappings.length + labMappings.length) {
-            setSelectAll(true);
-        } else {
-            setSelectAll(false);
-        }
+        setSelectAll(selectedIds.length === mappings.length + labMappings.length);
     }, [selectedIds, mappings, labMappings]);
 
     const fetchMappings = () => {
         fetch(`http://localhost:3000/getFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
-            .then(data => setMappings(data))
-            .catch(error => console.error('Error fetching regular mappings:', error));
+            .then(setMappings)
+            .catch(console.error);
     };
 
     const fetchLabMappings = () => {
         fetch(`http://localhost:3000/getLabFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
-            .then(data => setLabMappings(data))
-            .catch(error => console.error('Error fetching lab mappings:', error));
+            .then(setLabMappings)
+            .catch(console.error);
     };
 
     const handleCheckboxChange = (id) => {
@@ -49,30 +46,30 @@ function DFacSub({ selectedSemester, refreshMappings }) {
     };
 
     const handleSelectAll = () => {
-        if (selectAll) {
-            setSelectedIds([]);
-        } else {
-            setSelectedIds([...mappings.map(item => item.id), ...labMappings.map(item => item.id)]);
-        }
+        setSelectedIds(selectAll ? [] : [...mappings.map(item => item.id), ...labMappings.map(item => item.id)]);
         setSelectAll(!selectAll);
     };
 
-    const confirmDelete = () => {
-        if (selectedIds.length > 0) {
-            Promise.all(selectedIds.map(id => {
-                // Determine if the ID belongs to a lab mapping
+    const handleDeleteClick = () => {
+        if (selectedIds.length > 0) setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirmed = () => {
+        setShowDeleteModal(false);
+        Promise.all(
+            selectedIds.map(id => {
                 const isLabMapping = labMappings.some(lab => lab.id === id);
                 const endpoint = isLabMapping ? 'deleteLabFacSubMap' : 'deleteFacSubMap';
                 return fetch(`http://localhost:3000/${endpoint}/${id}`, { method: 'DELETE' });
-            }))
-                .then(() => {
-                    fetchMappings();
-                    fetchLabMappings();
-                    setSelectedIds([]);
-                    setSelectAll(false);
-                })
-                .catch(error => console.error('Error deleting subjects:', error));
-        }
+            })
+        )
+            .then(() => {
+                fetchMappings();
+                fetchLabMappings();
+                setSelectedIds([]);
+                setSelectAll(false);
+            })
+            .catch(console.error);
     };
 
     return (
@@ -95,60 +92,40 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                             <th>Subject</th>
                             <th>Class</th>
                             <th>Semester</th>
-                            <th>Lab Name</th> {/* Moved Lab Name to the end */}
+                            <th>Lab Name</th>
                             {deleteMode && (
                                 <th className="text-center">
                                     <span>Select All</span>
-                                    <Form.Check
-                                        type="checkbox"
-                                        checked={selectAll}
-                                        onChange={handleSelectAll}
-                                        className="ms-2"
-                                    />
+                                    <Form.Check type="checkbox" checked={selectAll} onChange={handleSelectAll} className="ms-2" />
                                 </th>
                             )}
                         </tr>
                     </thead>
                     <tbody>
-                        {/* Regular Subject Mappings */}
-                        {mappings.map((item) => (
-                            <tr key={`reg-${item.id}`}>
-                                <td>{item.faculty_name}</td>  
-                                <td>{item.subject_name}</td>  
+                        {mappings.map(item => (
+                            <tr key={item.id}>
+                                <td>{item.faculty_name}</td>
+                                <td>{item.subject_name}</td>
                                 <td>{item.section_id}</td>
                                 <td>{item.semester_id}</td>
-                                <td>-</td> {/* Dash for no lab name */}
+                                <td>-</td>
                                 {deleteMode && (
                                     <td className="text-center">
-                                        <Form.Check
-                                            type="checkbox"
-                                            checked={selectedIds.includes(item.id)}
-                                            onChange={() => handleCheckboxChange(item.id)}
-                                        />
+                                        <Form.Check type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => handleCheckboxChange(item.id)} />
                                     </td>
                                 )}
                             </tr>
                         ))}
-
-                        {/* Lab Subject Mappings */}
-                        {labMappings.map((lab) => (
-                            <tr key={`lab-${lab.id}`}>
-                                <td>
-                                    {[lab.faculty1_name, lab.faculty2_name, lab.faculty3_name]
-                                        .filter(Boolean)
-                                        .join(' & ')}
-                                </td>
-                                <td>{lab.subject_name} (Lab)</td>  
+                        {labMappings.map(lab => (
+                            <tr key={lab.id}>
+                                <td>{[lab.faculty1_name, lab.faculty2_name, lab.faculty3_name].filter(Boolean).join(' & ')}</td>
+                                <td>{lab.subject_name} (Lab)</td>
                                 <td>{lab.section_id}</td>
                                 <td>{lab.semester_id}</td>
-                                <td>{lab.lab_name || '-'}</td> {/* Display lab name or dash */}
+                                <td>{lab.lab_name || '-'}</td>
                                 {deleteMode && (
                                     <td className="text-center">
-                                        <Form.Check
-                                            type="checkbox"
-                                            checked={selectedIds.includes(lab.id)}
-                                            onChange={() => handleCheckboxChange(lab.id)}
-                                        />
+                                        <Form.Check type="checkbox" checked={selectedIds.includes(lab.id)} onChange={() => handleCheckboxChange(lab.id)} />
                                     </td>
                                 )}
                             </tr>
@@ -157,11 +134,24 @@ function DFacSub({ selectedSemester, refreshMappings }) {
                 </Table>
 
                 {deleteMode && selectedIds.length > 0 && (
-                    
-                        <Button variant="danger" className="delete-fab" onClick={confirmDelete}>
-                          <FaTrashAlt /> Delete Selected
-                        </Button>
+                    <Button variant="danger" className="delete-fab" onClick={handleDeleteClick}>
+                        <FaTrashAlt /> Delete Selected
+                    </Button>
                 )}
+
+                <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Confirm Deletion</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>Are you sure you want to delete {selectedIds.length} selected mapping(s)?</p>
+                        <p>This action cannot be undone.</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+                        <Button variant="danger" onClick={handleDeleteConfirmed}>Delete</Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </div>
     );

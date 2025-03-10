@@ -11,7 +11,7 @@ import FacultySubject from "./FacultySubject";
 import AFaculty from "./AddFaculty";
 import AddElective from "./AddElective";
 import ViewMappings from "./ViewMappings";
-import Display from "./Display";
+import Display from "./DisplayTimetable";
 import EditTimetable from "./EditTimetable";
 import FacultyDashboard from "./FacultyDashboard";
 import DisplayElectives from "./DisplayElectives";

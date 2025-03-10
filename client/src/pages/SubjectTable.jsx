@@ -6,6 +6,7 @@ import '../styles/SubjectTable.css';
 
 function SubjectTable() {
     const [subjects, setSubjects] = useState([]);
+    const [selectedSemester, setSelectedSemester] = useState('all'); // Add this state
     const [deleteMode, setDeleteMode] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [deleteIds, setDeleteIds] = useState([]);
@@ -17,18 +18,14 @@ function SubjectTable() {
 
     useEffect(() => {
         fetchSubjects();
-    }, []);
-
-    useEffect(() => {
-        if (subjects.length > 0 && deleteIds.length === subjects.length) {
-            setSelectAll(true);
-        } else {
-            setSelectAll(false);
-        }
-    }, [deleteIds, subjects]);
+    }, [selectedSemester]); // Add selectedSemester to dependency array
 
     const fetchSubjects = () => {
-        fetch('http://localhost:3000/subjects')
+        const url = selectedSemester === 'all' 
+            ? 'http://localhost:3000/subjects'
+            : `http://localhost:3000/subjects?semester=${selectedSemester}`;
+            
+        fetch(url)
             .then(response => response.json())
             .then(data => setSubjects(data))
             .catch(error => console.error('Error fetching subjects data:', error));
@@ -93,6 +90,7 @@ function SubjectTable() {
                     <Link to="/admin/addSubjects" className="add-subject-btn btn-dark">
                         Add Subject
                     </Link>
+                
 
                     <div className="delete-mode-toggle">
                         <Form.Check
@@ -108,8 +106,15 @@ function SubjectTable() {
                 <Table striped bordered hover className="subject-table mt-3">
                     <thead>
                         <tr>
+                        <th>
+                            <Form.Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
+                            <option value="">All Semesters</option>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(semester => (
+                                <option key={semester} value={semester}>Semester {semester}</option>
+                            ))}
+                            </Form.Select>
+                        </th>
                             <th>ID</th>
-                            <th>Semester</th>
                             <th>Name</th>
                             <th>Subject Type</th>
                             <th>Hours Per Week</th>
@@ -130,8 +135,8 @@ function SubjectTable() {
                     <tbody>
                         {subjects.map((item) => (
                             <tr key={item.id} className={deleteMode ? "delete-mode-row" : ""}>
-                                <td>{item.id}</td>
                                 <td>{item.semester_id}</td>
+                                <td>{item.id}</td>
                                 <td>{item.name}</td>
                                 <td>
                                     {item.type === '1' ? 'Lecture' :

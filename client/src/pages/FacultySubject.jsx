@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import DFacSub from './DFacSub';
 import '../styles/FacultySubject.css';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
 function FacultySubject() {
     const [faculty, setFaculty] = useState([]);
@@ -18,6 +20,8 @@ function FacultySubject() {
         class: '',
     });
     const [labs, setLabs] = useState([]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         if (selectedSemester) {
@@ -108,6 +112,28 @@ function FacultySubject() {
             .catch((error) => console.error('Error:', error));
     };
 
+    const handleDeleteConfirmed = () => {
+        if (!deleteTarget) return;
+
+        const apiEndpoint = deleteTarget.isLab 
+            ? `http://localhost:3000/deleteLabMapping/${deleteTarget.id}`
+            : `http://localhost:3000/deleteMapping/${deleteTarget.id}`;
+
+        fetch(apiEndpoint, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (response.ok) {
+                    setRefreshMappings(prev => !prev);
+                }
+            })
+            .catch(error => console.error('Error deleting mapping:', error))
+            .finally(() => {
+                setShowDeleteModal(false);
+                setDeleteTarget(null);
+            });
+    };
+
     return (
         <div className="faculty-subject-container">
             {/* Semester Selection */}
@@ -188,6 +214,25 @@ function FacultySubject() {
 
             {/* Display Mapped Data */}
             {selectedSemester && <DFacSub selectedSemester={selectedSemester} refreshMappings={refreshMappings} />}
+
+            {/* Delete Confirmation Modal */}
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Deletion</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Are you sure you want to delete this mapping?</p>
+                    <p>This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteConfirmed}>
+                        Delete
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
