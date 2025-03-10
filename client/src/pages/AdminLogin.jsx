@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
-import { FaUserPlus, FaBook, FaMapMarkedAlt, FaClipboard, FaEye, FaCalendarAlt, FaChalkboardTeacher, FaEdit } from "react-icons/fa";
+import { FaUserPlus, FaBook, FaMapMarkedAlt, FaClipboard, FaEye, FaCalendarAlt, FaChalkboardTeacher, FaEdit ,FaFlask,FaUserMd, FaUser} from "react-icons/fa";
 import "../styles/AdminLogin.css";
 import { userContext } from "../context/UserContext";
 import Faculty from "./Faculty";
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
             </NavLink>
 
             <NavLink to="/admin/addLab" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaBook className="icon" /> Add Lab
+              <FaFlask className="icon" /> Add Lab
             </NavLink>
 
             <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
             </NavLink>
 
             <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaChalkboardTeacher className="icon" /> Lab Timetable
+              <FaUserMd className="icon" /> Lab Timetable
             </NavLink>
 
             <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>

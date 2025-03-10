@@ -95,15 +95,18 @@
 
 /* Content Area */
 .content {
-  margin-left: 300px; /* Changed from 250px to match sidebar width */
-  width: calc(100% - 300px); /* Adjusted to match sidebar width */
+  margin-left: 300px;
+  width: calc(100% - 300px);
   height: 100vh;
-  overflow-y: auto; /* Only content scrolls */
+  overflow-y: auto;
   background-color: white;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin; /* Standard property */
+  scrollbar-color: white transparent; /* Standard property */
 }
+
 
 /* Content Box */
 .content-box {
@@ -129,18 +132,5 @@
   margin: 10px 0;
   max-height: calc(100vh - 200px);
   scrollbar-width: thin;
-  scrollbar-color: #888 transparent;
-}
-
-.handleOverflow::-webkit-scrollbar {
-  width: 8px;
-}
-
-.handleOverflow::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.handleOverflow::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 4px;
+  scrollbar-color: #ffffff transparent;
 }

@@ -1,0 +1,13 @@
+.faculty {
+    background-color: #d6d6d6 !important;
+    width: calc(100% - 650px);
+    max-width: calc(100vw - 50px);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.heading {
+    text-align: center;
+    color: black;
+}

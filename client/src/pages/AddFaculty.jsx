@@ -42,7 +42,7 @@ function AFaculty() {
     return (
         <div className="d-flex justify-content-center pt-5">
             <div className="w-50 rounded faculty p-3">
-                <h1 className="text-center">Enter Faculty details</h1>
+                <h1 className="text-center text-dark">Enter Faculty details</h1>
                 {error && <div className="alert alert-danger">{error}</div>}
                 {success && <div className="alert alert-success">Faculty added successfully!</div>}
                 <form onSubmit={handleSubmit}>
@@ -92,7 +92,7 @@ function AFaculty() {
                         </Form.Select>
                     </div>
                     <div className="d-flex justify-content-center">
-                        <button className="btn btn-light" type="submit" disabled={loading}>
+                        <button className="btn btn-dark" type="submit" disabled={loading}>
                             {loading ? 'Submitting...' : 'Submit'}
                         </button>
                     </div>

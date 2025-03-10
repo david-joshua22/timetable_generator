@@ -1,6 +1,7 @@
 import Form from 'react-bootstrap/Form';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/InputContainer.css';
 
 function Subjects(){
     const [subject, setFaculty] = useState({ id: '', name: '', type: '', hours_per_week:'',semester:''});
@@ -29,7 +30,7 @@ function Subjects(){
     return(
         <div className="d-flex justify-content-center pt-5">
             <div className="w-50 rounded faculty p-3">
-                <h1 className='text-center'>Enter Subject details</h1>
+                <h1 className='text-center text-black'>Enter Subject details</h1>
                 <form onSubmit={handleSubmit}>
                 <div className="mb-3 ">
                 <input type="text" name = "name" placeholder="Enter Subject name" className="form-control" onChange={handleChange} required/>
@@ -62,7 +63,7 @@ function Subjects(){
             </Form.Select>
             </div>
             <div className='d-flex justify-content-center'>
-                <button className="btn btn-light" type="submit">Submit</button>
+                <button className="btn btn-dark" type="submit">Submit</button>
                 </div>
             </form>
             </div>
