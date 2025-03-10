@@ -30,8 +30,6 @@ async function assignElectivePeriod(fac_map, sections) {
         if (facultyList.length === 0) return;
         else if(facultyList.length === 1){
             let days = shuffleArray([1, 2, 3, 4, 5]);
-            days.pop();
-            days.pop();
    
             for (let facultyGroup of facultyList) {
                 let { elective_id, hours_per_week, semester_id, faculty_id, sections: allSections, elective_section } = facultyGroup;
@@ -40,7 +38,7 @@ async function assignElectivePeriod(fac_map, sections) {
                 for (let day of days) {
                     if (assigned_hours >= hours_per_week) break;
    
-                    let periods = shuffleArray([1,2, 3,4,5,6]);
+                    let periods = shuffleArray([1,2,3,4,5,6]);
                     for (let period of periods) {
                         if (assigned_hours >= hours_per_week) break;
    
@@ -81,8 +79,6 @@ async function assignElectivePeriod(fac_map, sections) {
         else {
             const facultyList1 = facultyList;
             let days = shuffleArray([1, 2, 3, 4, 5]);
-            days.pop();
-            days.pop();
             for (let facultyGroup of facultyList1) {
                 let { elective_id, hours_per_week, semester_id, faculty_id, sections: allSections, elective_section } = facultyGroup;
                 let assigned_hours = 0;

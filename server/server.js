@@ -375,15 +375,18 @@ app.post('/getFacultyTimetable', (req, res) => {
     const sql = `SELECT 
                         subject.name AS subject_name, 
                         faculty.name AS faculty_name, 
-                        elective.elective_name,
+                        CASE 
+                            WHEN subject.type = 'Elective' THEN elective.elective_name 
+                            ELSE NULL 
+                        END AS elective_name,
                         t.*,
                         subject.type
-                        FROM faculty_timetable AS t
-                        INNER JOIN subject ON t.subject_id = subject.id
-                        INNER JOIN faculty ON t.faculty_id = faculty.id
-                        LEFT JOIN elective ON t.faculty_id = elective.faculty_id  -- Joining elective table
-                        WHERE t.faculty_id = ?
-                        ORDER BY t.day, t.time; `;
+                    FROM faculty_timetable AS t
+                    INNER JOIN subject ON t.subject_id = subject.id
+                    INNER JOIN faculty ON t.faculty_id = faculty.id
+                    LEFT JOIN elective ON t.subject_id = elective.elective_id 
+                                    AND elective.faculty_id = t.faculty_id
+                    WHERE t.faculty_id = ? ; `;
 
     db.query(sql, [selectedFaculty], (err, results) => {
         if (err) {
@@ -399,21 +402,23 @@ app.post('/getClassFaculty', (req, res) => {
     const { selectedFaculty } = req.body;
 
     const sql = `SELECT 
-                t.semester_id, 
-                t.section_id, 
-                t.elective_section_id,
-                subject.name AS subject_name, 
-                faculty.name AS faculty_name, 
-                elective.elective_name,
-                t.*,  
-                subject.type
-            FROM faculty_timetable AS t
-            INNER JOIN subject ON t.subject_id = subject.id
-            INNER JOIN faculty ON t.faculty_id = faculty.id
-            LEFT JOIN elective ON t.faculty_id = elective.faculty_id  
-            WHERE t.faculty_id = ?
-            GROUP BY t.semester_id, t.section_id, t.elective_section_id, t.subject_id, t.faculty_id, elective.elective_name
-            ORDER BY t.semester_id, t.section_id, t.elective_section_id;
+    t.semester_id, 
+    t.section_id, 
+    t.elective_section_id,
+    subject.name AS subject_name, 
+    faculty.name AS faculty_name, 
+    (SELECT elective.elective_name 
+     FROM elective 
+     WHERE elective.faculty_id = t.faculty_id 
+     LIMIT 1) AS elective_name,  -- Select only one elective_name
+    t.*,  
+    subject.type
+FROM faculty_timetable AS t
+INNER JOIN subject ON t.subject_id = subject.id
+INNER JOIN faculty ON t.faculty_id = faculty.id
+WHERE t.faculty_id = ?
+GROUP BY t.semester_id, t.section_id, t.elective_section_id, t.subject_id, t.faculty_id, subject.name, faculty.name, subject.type
+ORDER BY t.semester_id, t.section_id, t.elective_section_id;
                     `;
 
     db.query(sql, [selectedFaculty], (err, results) => {
