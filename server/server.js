@@ -555,7 +555,7 @@ app.get('/getSubjectsBySemester', (req, res) => {
             s.type, 
             s.semester_id 
         FROM subject s
-        WHERE s.semester_id = ?;
+        WHERE s.semester_id = ? and s.type LIKE 'L%';
     `;
 
     db.query(sql, [semester], (err, data) => {

@@ -24,17 +24,20 @@ function groupElectives(rowDataPackets, sections) {
     }, {});
 
     // Add a dummy counseling period
-    const semester_id = rowDataPackets.length > 0 ? rowDataPackets[0].semester_id : '';
-    grouped['MVGRCOUN6'] = {
-        semester_id: semester_id,
-        elective_id: 'MVGRCOUN6',
-        elective_section: [],
-        elective_subject_id: [],
-        elective_name: [],
-        faculty_id: [],
-        hours_per_week: 3,
-        sections: sections.map(s => s.section_id)
-    };
+    if (grouped.length === 2) {
+
+        const semester_id = rowDataPackets.length > 0 ? rowDataPackets[0].semester_id : '';
+        grouped['MVGRCOUN6'] = {
+            semester_id: semester_id,
+            elective_id: 'MVGRCOUN6',
+            elective_section: [],
+            elective_subject_id: [],
+            elective_name: [],
+            faculty_id: [],
+            hours_per_week: 3,
+            sections: sections.map(s => s.section_id)
+        };
+    }
 
     return grouped;
 }

@@ -69,7 +69,7 @@ function AFaculty() {
                         />
                     </div>
                     <div className="mb-2">
-                        <Form.Select 
+                    <Form.Select 
                             name="department" 
                             aria-label="Select Department" 
                             onChange={handleChange} 
@@ -79,17 +79,17 @@ function AFaculty() {
                         >
                             <option value="">Select Department</option>
                             <option value="CSE">CSE</option>
-                            <option value="IT">IT</option>
-                            <option value="CSIT">CSIT</option>
+                            <option value="IE&CT">IE&CT</option>
                             <option value="DE">DE</option>
                             <option value="CIVIL">CIVIL</option>
                             <option value="CHEM">CHEM</option>
                             <option value="ECE">ECE</option>
                             <option value="EEE">EEE</option>
                             <option value="MECH">MECH</option>
+                            <option value="MBA">MBA</option>
                             <option value="S&H">S&H</option>
                             <option value="T&P">T&P</option>
-                        </Form.Select>
+                    </Form.Select>
                     </div>
                     <div className="d-flex justify-content-center">
                         <button className="btn btn-dark" type="submit" disabled={loading}>

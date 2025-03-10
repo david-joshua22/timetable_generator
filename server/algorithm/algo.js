@@ -12,10 +12,10 @@ async function getDataAndSchedule(semesterId) {
         const lectureMap = await queryDatabase("select * from fac_sec_map inner JOIN subject on subject.id = fac_sec_map.subject_id where type = ? and fac_sec_map.semester_id = ?",['Lecture',semesterId]);
         const sections = await queryDatabase("SELECT section_id FROM section_semester_map WHERE semester_id = ?", [semesterId]);
         const electives = await queryDatabase("SELECT * FROM elective where semester_id = ?",[semesterId]);
-        await assignElectivePeriod(electives, sections);
         for (let item of labMap) {
             await assignLabPeriod(item);
         }
+        await assignElectivePeriod(electives, sections);
         for (let item of lectureMap) {
             await assignLecturePeriod(item);
         }
@@ -27,8 +27,8 @@ async function getDataAndSchedule(semesterId) {
 async function assignElectivePeriod(fac_map, sections) {
     try {
         const facultyList = Object.values(groupElectives(fac_map, sections));
-        if (facultyList.length === 1) return;
-        else if(facultyList.length === 2){
+        if (facultyList.length === 0) return;
+        else if(facultyList.length === 1){
             let days = shuffleArray([1, 2, 3, 4, 5]);
             days.pop();
             days.pop();
@@ -40,7 +40,7 @@ async function assignElectivePeriod(fac_map, sections) {
                 for (let day of days) {
                     if (assigned_hours >= hours_per_week) break;
    
-                    let periods = shuffleArray([2, 3]);
+                    let periods = shuffleArray([1,2, 3,4,5,6]);
                     for (let period of periods) {
                         if (assigned_hours >= hours_per_week) break;
    
@@ -78,7 +78,7 @@ async function assignElectivePeriod(fac_map, sections) {
                 }
             }
         }
-        else if(facultyList.length === 3) {
+        else {
             const facultyList1 = facultyList;
             let days = shuffleArray([1, 2, 3, 4, 5]);
             days.pop();
@@ -158,56 +158,6 @@ async function assignElectivePeriod(fac_map, sections) {
        
                 if (assigned_hours < hours_per_week) {
                     console.log(` Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
-                }
-            }
-        }
-        else{
-            let days = shuffleArray([1, 2, 3, 4, 5]);
-            days.pop();
-            days.pop();
-   
-            for (let facultyGroup of facultyList) {
-                let { elective_id, hours_per_week, semester_id, faculty_id, sections: allSections, elective_section } = facultyGroup;
-                let assigned_hours = 0;
-   
-                for (let day of days) {
-                    if (assigned_hours >= hours_per_week) break;
-   
-                    let periods = shuffleArray([1,2,3,4,5,6]);
-                    for (let period of periods) {
-                        if (assigned_hours >= hours_per_week) break;
-   
-                        let allAvailable = await Promise.all(
-                            allSections.map(async (section_id) => {
-                                let faculty_avail = await Promise.all(faculty_id.map(fac => checkFacultyAvailability(fac, day, period)));
-                                let class_avail = await checkClassAvailability(section_id, semester_id, day, period);
-                                return faculty_avail.every(Boolean) && class_avail;
-                            })
-                        );
-   
-                        if (allAvailable.every(Boolean)) {
-                            await Promise.all(allSections.map(async (section_id) => {
-                                await queryDatabase(
-                                    "INSERT INTO timetable(day, time, semester_id, section_id, subject_id) VALUES(?,?,?,?,?)",
-                                    [day, period, semester_id, section_id, elective_id]
-                                );
-                            }));
-   
-                            await Promise.all(faculty_id.map(async (faculty, index) => {
-                                await queryDatabase(
-                                    "INSERT INTO faculty_timetable(faculty_id, day, time, semester_id, elective_section_id, subject_id) VALUES(?,?,?,?,?,?)",
-                                    [faculty, day, period, semester_id, elective_section[index], elective_id]
-                                );
-                            }));
-   
-                            assigned_hours += 1;
-                            break;
-                        }
-                    }
-                }
-   
-                if (assigned_hours < hours_per_week) {
-                    console.log(`Not all hours could be assigned for Elective ID: ${facultyGroup.elective_id}`);
                 }
             }
         }

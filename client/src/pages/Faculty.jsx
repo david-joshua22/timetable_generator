@@ -162,7 +162,7 @@ function Faculty() {
           <Modal.Title>Edit Faculty</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+        <Form>
             <Form.Group controlId="formFacultyName">
               <Form.Label>Name</Form.Label>
               <Form.Control type="text" name="name" value={editFaculty.name} onChange={handleEditChange} />
@@ -176,19 +176,19 @@ function Faculty() {
               >
                 <option value="">Select Department</option>
                 <option value="CSE">CSE</option>
-                <option value="IT">IT</option>
-                <option value="CSIT">CSIT</option>
+                <option value="IE&CT">IE&CT</option>
                 <option value="DE">DE</option>
                 <option value="CIVIL">CIVIL</option>
                 <option value="CHEM">CHEM</option>
                 <option value="ECE">ECE</option>
                 <option value="EEE">EEE</option>
                 <option value="MECH">MECH</option>
+                <option value="MBA">MBA</option>
                 <option value="S&H">S&H</option>
                 <option value="T&P">T&P</option>
               </Form.Select>
             </Form.Group>
-          </Form>
+ </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
