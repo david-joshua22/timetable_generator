@@ -128,6 +128,7 @@ function ViewMappings() {
                         <li>Faculty timetable data</li>
                         <li>Lab timetable data</li>
                     </ul>
+                    <p className='text-danger'> * [PREVIOUSLY GENERATED DATA, IF ANY, WILL BE ERASED]</p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowGenerateModal(false)}>
