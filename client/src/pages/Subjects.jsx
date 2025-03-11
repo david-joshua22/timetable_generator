@@ -41,9 +41,9 @@ function Subjects(){
             <div className="mb-3 ">
             <Form.Select aria-label="Default select example" name = "type" onChange={handleChange} className='formSelect' required>
                 <option>Enter Subject type</option>
-                <option value="1">Lecture</option>
-                <option value="2">Lab</option>
-                <option value="3">Elective</option>
+                <option value="Lecture">Lecture</option>
+                <option value="Lab">Lab</option>
+                <option value="Elective">Elective</option>
             </Form.Select>
             </div>
             <div className="mb-3 ">

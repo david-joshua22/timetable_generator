@@ -495,7 +495,7 @@ app.post('/getFacOfClass', (req, res) => {
                         fp.subject_id
                       FROM faculty_lab_mapping AS fp 
                       INNER JOIN faculty f1 ON fp.faculty_id_A = f1.id 
-                      INNER JOIN faculty f2 ON fp.faculty_id_B = f2.id 
+                      LEFT JOIN faculty f2 ON fp.faculty_id_B = f2.id 
                       LEFT JOIN faculty f3 ON fp.faculty_id_C = f3.id 
                       INNER JOIN subject ON fp.subject_id = subject.id 
                       WHERE fp.section_id = ? AND fp.semester_id = ?`;
@@ -1028,9 +1028,8 @@ app.get('/deleteData', async (req, res) => {
         const deleteQueries = [
             `DELETE FROM timetable WHERE semester_id = ?`,
             `DELETE FROM faculty_timetable WHERE semester_id = ?`,
-            `DELETE FROM elective WHERE semester_id = ?`,
-            `DELETE FROM fac_sec_map WHERE semester_id = ?`,
-            `DELETE FROM faculty_lab_mapping WHERE semester_id = ?`
+            `DELETE FROM lab_timetable WHERE semester_id = ?`,
+
         ];
 
         // Execute delete queries sequentially

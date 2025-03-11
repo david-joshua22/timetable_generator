@@ -75,7 +75,7 @@ function Login() {
       .catch((error) => {
         setIsLoading(false);
         console.error("Error:", error);
-        alert("❌ Bad credentials: " + error.message);
+        alert("Bad credentials: " + error.message);
       });
   };
 

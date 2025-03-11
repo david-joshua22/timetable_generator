@@ -207,9 +207,9 @@ function SubjectTable() {
                             <Form.Group controlId="formSubjectType" className="mt-3">
                                 <Form.Label>Subject Type</Form.Label>
                                 <Form.Select name="type" value={editSubject.type} onChange={handleEditChange}>
-                                    <option value="1">Lecture</option>
-                                    <option value="2">Lab</option>
-                                    <option value="3">Elective</option>
+                                    <option value="Lecture">Lecture</option>
+                                    <option value="Lab">Lab</option>
+                                    <option value="Elective">Elective</option>
                                 </Form.Select>
                             </Form.Group>
                             <Form.Group controlId="formSubjectHours" className="mt-3">

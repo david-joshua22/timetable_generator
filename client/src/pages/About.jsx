@@ -67,7 +67,7 @@ const About = () => {
         <p>
           Contact us @ <a href="mailto:doc@mvgrce.edu.in">doc@mvgrce.edu.in</a>
           <br />
-          Alternate email - <a href="mailto:dsk@gmail.com">dsk@gmail.com</a>
+          Alternate email - <a href="mailto:mbrani@mvgrce.edu.in">mbrani@mvgrce.edu.in</a>
         </p>
       </div>
     </div>

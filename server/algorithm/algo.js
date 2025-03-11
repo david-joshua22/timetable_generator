@@ -79,6 +79,7 @@ async function assignElectivePeriod(fac_map, sections) {
         else {
             const facultyList1 = facultyList;
             let days = shuffleArray([1, 2, 3, 4, 5]);
+            
             for (let facultyGroup of facultyList1) {
                 let { elective_id, hours_per_week, semester_id, faculty_id, sections: allSections, elective_section } = facultyGroup;
                 let assigned_hours = 0;
@@ -170,8 +171,13 @@ async function assignLabPeriod(lab_map) {
 
         // Define period ranges based on lab hours
         const periodRanges = (hours_per_week === 3) 
-            ? [[4, 6],[1,3]]
-            : [[4, 5],[5, 6],[1, 2], [2, 3], [3, 4]];
+            ? [[4, 6], [1, 3]]
+            : (hours_per_week === 2)
+                ? [[5, 6], [3, 4], [1, 2], [2, 3], [4, 5]]
+                : (hours_per_week === 1)
+                    ? [[4,4], [5,5], [6,6], [3,3], [2,2], [1,1]]
+                    : [];
+
 
         for (let day of days) {
             if (checkAssigned) break;
