@@ -89,31 +89,34 @@ const EditTimetable = () => {
         }
     };
 
-    const handlePrepareForManualAdd =async (entry) => {
+    const handlePrepareForManualAdd = async (entry) => {
         if (!editMode) setEditMode(true);
         setPendingRestoreEntry(entry);
         setShowSelectMessage(true);
         setIsAddingEntry(true);
+        
         try {
+            // Use values directly from the deleted entry
             const response = await fetch('http://localhost:3000/checkCellAvailability', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     faculty_id: entry.faculty_id,
                     semester_id: entry.semester_id,
-                    section_id: entry.section_id
+                    section_id: entry.section_id,
+                    subject_type: entry.type || null,
+                    lab_name: entry.lab_name || null
                 })
             });
     
             if (!response.ok) throw new Error('Failed to fetch unavailable cells');
-    
             const data = await response.json();
-            setUnavailableCells(data); // Store unavailable cells
+            setUnavailableCells(data);
         } catch (error) {
             console.error("Error fetching unavailable cells:", error);
         }
     };
-
+    
     const handleCellClick = async (day, time) => {
         if (pendingRestoreEntry) {
             await handleAddToTimetable(day, time, pendingRestoreEntry);
@@ -132,17 +135,44 @@ const EditTimetable = () => {
             console.warn("No subject found for this slot.");
             return;
         }
-        const { subject_id, name } = selectedEntry;
+        const { subject_id, name, type } = selectedEntry; 
     
         const facultyResponse = await fetch("http://localhost:3000/getFaculty", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ section_id: section, semester_id: semester, subject_id })
+            body: JSON.stringify({ 
+                section_id: section, 
+                semester_id: semester, 
+                subject_id,
+                subject_type: type
+            })
         });
     
         if (!facultyResponse.ok) throw new Error("Failed to fetch faculty");
     
         const facultyData = await facultyResponse.json();
+        console.log(facultyData);
+
+        // Handle lab faculty format
+        let facultyIds = [];
+        let facultyNames = [];
+        if (type === 'Lab') {
+            let idA = facultyData[0].faculty_id_A;
+            let idB = facultyData[0].faculty_id_B;
+            let idC = facultyData[0].faculty_id_C;
+            let facultyNameA = facultyData[0].faculty_name_A;
+            let facultyNameB = facultyData[0].faculty_name_B;
+            let facultyNameC = facultyData[0].faculty_name_C;
+            facultyIds = [idA, idB, idC].filter(id => id !== null);
+            facultyNames = [facultyNameA, facultyNameB, facultyNameC].filter(name => name !== null);
+        } else {
+            facultyIds = Array.isArray(facultyData) ? 
+                facultyData.map(f => f.faculty_id) : 
+                [facultyData[0]?.faculty_id];
+            facultyNames = Array.isArray(facultyData) ? 
+                facultyData.map(f => f.faculty_name) : 
+                [facultyData[0]?.faculty_name];
+        }
     
         setSelectedCell({
             semester_id: semester,
@@ -150,19 +180,23 @@ const EditTimetable = () => {
             day,
             time,
             subject_id: subject_id,
-            faculty_id: facultyData[0]?.faculty_id || "Unknown",
-            faculty_name: facultyData[0]?.faculty_name || "Unknown",
-            subject_name: name
+            faculty_id: facultyIds,
+            faculty_name: facultyNames|| "Unknown",
+            subject_name: name,
+            subject_type: type,
+            lab_name : facultyData[0].lab_name || null
         });
+
+        console.log(selectedCell);
     };    
 
     const handleCancelAdd = () => {
-        setEditMode(false); // Exit edit mode
-            setManualEditMode(false); // Exit manual edit mode
-            setPendingRestoreEntry(null); // Remove pending entry
-            setShowSelectMessage(false); // Hide select message
-            setIsAddingEntry(false); // Hide "Cancel" button
-            setUnavailableCells([]); // Clear 
+        setEditMode(false); 
+            setManualEditMode(false); 
+            setPendingRestoreEntry(null);
+            setShowSelectMessage(false); 
+            setIsAddingEntry(false); 
+            setUnavailableCells([]); 
     };
     
     const handleAddToTimetable = async (day, time, entry) => {
@@ -180,7 +214,9 @@ const EditTimetable = () => {
                     subject_id: entry.subject_id,
                     faculty_id: entry.faculty_id,
                     faculty_name: entry.faculty_name,
-                    subject_name: entry.subject_name
+                    subject_name: entry.subject_name,
+                    subject_type: entry.type || null,
+                    lab_name: entry.lab_name || null
                 })
             });
     
@@ -194,7 +230,10 @@ const EditTimetable = () => {
                     semester: entry.semester_id,
                     section: entry.section_id,
                     day: entry.day,
-                    time: entry.time
+                    time: entry.time,
+                    subject_id: entry.subject_id,
+                    subject_type: entry.type || null,
+                    lab_name: entry.lab_name || null
                 })
             });
     
@@ -206,7 +245,7 @@ const EditTimetable = () => {
             ));
     
             await fetchTimetable();
-
+    
             if (!manualEditMode) {
                 setEditMode(false);
             }
@@ -234,13 +273,24 @@ const EditTimetable = () => {
             }
     
             const data = await response.json();
-            console.log("Fetched Deleted Entries:", data); // ✅ Debugging log
+            
+            // Format the data to handle both array and string faculty information
+            const formattedData = data.map(entry => ({
+                ...entry,
+                faculty_id: Array.isArray(entry.faculty_id) ? entry.faculty_id : [entry.faculty_id],
+                faculty_name: Array.isArray(entry.faculty_name) ? 
+                    entry.faculty_name.join(', ') : 
+                    entry.faculty_name,
+                subject_type: entry.subject_type || null,  // Added subject_type with default
+                lab_name: entry.lab_name || null               // Added lab_name with default
+            }));
     
-            setDeletedEntries(data || []); // ✅ Ensure it's always an array
-            return data;
+            console.log("Fetched Deleted Entries:", formattedData);
+            setDeletedEntries(formattedData || []);
+            return formattedData;
         } catch (error) {
             console.error("Error fetching deleted entries:", error);
-            setDeletedEntries([]); // ✅ Prevents undefined errors
+            setDeletedEntries([]);
             return [];
         }
     };
@@ -261,16 +311,17 @@ const EditTimetable = () => {
                     subject_id: selectedCell.subject_id,
                     faculty_id: selectedCell.faculty_id,
                     faculty_name: selectedCell.faculty_name,
-                    subject_name: selectedCell.subject_name
+                    subject_name: selectedCell.subject_name,
+                    subject_type: selectedCell.subject_type,
+                    lab_name : selectedCell.lab_name
                 })
             });
     
             if (!response.ok) throw new Error('Failed to update timetable');
     
-            console.log("Entry deleted successfully!"); // Debugging log
+            console.log("Entry deleted successfully!"); 
             await fetchDeletedEntries(); 
     
-            // Remove from timetable
             setTimetable(prev => prev.filter(
                 item => !(item.day === selectedCell.day && item.time === selectedCell.time)
             ));
@@ -391,11 +442,15 @@ const EditTimetable = () => {
                                         <td>{days[entry.day]}</td>
                                         <td>{entry.time}</td>
                                         <td>{entry.subject_name || entry.subject_id}</td>
-                                        <td>{entry.faculty_name}</td>
+                                        <td>
+                                            {Array.isArray(entry.faculty_name) ? 
+                                                entry.faculty_name.join(', ') : 
+                                                entry.faculty_name}
+                                        </td>
                                         <td className='text-center'>
-                                                <Button className="add-btn btn btn-dark" onClick={() => handlePrepareForManualAdd(entry)}>
-                                                    <FaPlus />
-                                                </Button>
+                                            <Button className="add-btn btn btn-dark" onClick={() => handlePrepareForManualAdd(entry)}>
+                                                <FaPlus />
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}

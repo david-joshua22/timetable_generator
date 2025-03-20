@@ -848,32 +848,87 @@ app.post("/verify-token", (req, res) => {
 });
 
 app.post('/editTimetable', async (req, res) => {
-    const {semester,section,day,time,subject_id,faculty_id,faculty_name,subject_name} = req.body;
+    const {semester,section,day,time,subject_id,faculty_id,faculty_name,subject_name,subject_type,lab_name} = req.body;
 
-    console.log("Received request:", req.body);
 
     try {
-        const deleteQuery1 = `
-            DELETE FROM timetable 
-            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+        let deleteQuery1 = '';
+        let deleteQuery2 = '';
+        let deleteQuery3 = '';
+        if(subject_type === 'Lecture'){
+            deleteQuery1 = `
+                DELETE FROM timetable 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+    
+            deleteQuery2 = `
+                DELETE FROM faculty_timetable 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+    
+            let  insertDeletedEntryQuery = `
+                INSERT INTO delete_entries (semester_id, section_id, day, time, subject_id, faculty_id, faculty_name, subject_name,type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)`;
 
-        const deleteQuery2 = `
-            DELETE FROM faculty_timetable 
-            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+            let faculty_alias = faculty_name[0];
+            let faculty_identity = faculty_id[0];
+            await Promise.all([
+                db.query(deleteQuery1, [semester, section, day, time]),
+                db.query(deleteQuery2, [semester, section, day, time]),
+                db.query(insertDeletedEntryQuery, [semester, section, day, time, subject_id, faculty_identity,faculty_alias, subject_name,subject_type])
+            ]);
+            
+            return res.status(200).json({ message: "Timetable entry deleted and stored in deleted_entries successfully" });
+        }
+        else if(subject_type === 'Lab'){
+            // Create array of delete queries for faculty_timetable
+            const facultyDeleteQueries = faculty_id.map(facId => `
+                DELETE FROM faculty_timetable
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ? AND faculty_id = ?`
+            );
 
-        const insertDeletedEntryQuery = `
-            INSERT INTO delete_entries (semester_id, section_id, day, time, subject_id, faculty_id, faculty_name, subject_name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+            // Base queries
+            deleteQuery1 = `
+                DELETE FROM timetable 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
 
-        // Execute deletion and insertion in parallel
-        await Promise.all([
-            db.query(deleteQuery1, [semester, section, day, time]),
-            db.query(deleteQuery2, [semester, section, day, time]),
-            db.query(insertDeletedEntryQuery, [semester, section, day, time, subject_id, faculty_id, faculty_name, subject_name])
-        ]);
+            deleteQuery3 = `
+                DELETE FROM lab_timetable
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ? AND subject_id = ?`;
 
-        return res.status(200).json({ message: "Timetable entry deleted and stored in deleted_entries successfully" });
+            // New query for lab_deleted_entries
+            const insertLabDeletedEntryQuery = `
+                INSERT INTO lab_deleted_entries 
+                (day, time, section_id, semester_id, subject_id, lab_name, type,
+                 faculty_id_A, faculty_id_B, faculty_id_C,
+                 faculty_name_A, faculty_name_B, faculty_name_C)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
 
+            // Prepare all queries for execution
+            const queryPromises = [
+                db.query(deleteQuery1, [semester, section, day, time]),
+                db.query(deleteQuery3, [semester, section, day, time, subject_id]),
+            ];
+
+            // Add faculty-specific delete queries
+            faculty_id.forEach((facId, index) => {
+                queryPromises.push(
+                    db.query(facultyDeleteQueries[index], [semester, section, day, time, facId])
+                );
+            });
+
+            // Insert into lab_deleted_entries
+            queryPromises.push(
+                db.query(insertLabDeletedEntryQuery, [
+                    day, time, section, semester, subject_id, lab_name,subject_type,
+                    faculty_id[0] || null, faculty_id[1] || null, faculty_id[2] || null,
+                    faculty_name[0] || null, faculty_name[1] || null, faculty_name[2] || null
+                ])
+            );
+
+            // Execute all queries
+            await Promise.all(queryPromises);
+            
+            return res.status(200).json({ message: "Lab timetable entry and faculty data deleted successfully" });
+        }
     } catch (error) {
         console.error("Database error:", error);
         return res.status(500).json({ error: "Internal server error" });
@@ -883,23 +938,49 @@ app.post('/editTimetable', async (req, res) => {
 
 app.post('/addToTimetable',async(req,res)=>{
     try {
-    const { semester, section, day, time,subject_id, faculty_id } = req.body;
+    const { semester, section, day, time,subject_id, faculty_id,subject_type,lab_name} = req.body;
+    if(subject_type === "Lecture"){
+            const insertQuery1 = `
+            INSERT INTO timetable(semester_id,section_id,time,day,subject_id) 
+            VALUES(?,?,?,?,?)`;
 
+            const insertQuery2 = `
+                INSERT INTO faculty_timetable(semester_id,section_id,time,day,faculty_id,subject_id) 
+            VALUES(?,?,?,?,?,?)`;
+
+            await Promise.all([
+                db.query(insertQuery1, [semester, section, time,day,subject_id]),
+                db.query(insertQuery2, [semester, section,time, day,faculty_id,subject_id])
+            ]);
+
+        return res.status(200).json({ message: "Timetable entry inserted successfully" });
+    }
+    else if(subject_type === "Lab"){
+        
         const insertQuery1 = `
-        INSERT INTO timetable(semester_id,section_id,time,day,subject_id) 
-        VALUES(?,?,?,?,?)`;
+            INSERT INTO timetable(semester_id,section_id,time,day,subject_id) 
+            VALUES(?,?,?,?,?)`;
 
-        const insertQuery2 = `
+        const insertLabQuery = `
+            INSERT INTO lab_timetable(semester_id,section_id,time,day,subject_id,lab_name) 
+            VALUES(?,?,?,?,?,?)`;
+
+        // Insert into faculty_timetable for each faculty
+        const facultyInsertQueries = faculty_id.map(facId => `
             INSERT INTO faculty_timetable(semester_id,section_id,time,day,faculty_id,subject_id) 
-        VALUES(?,?,?,?,?,?)`;
+            VALUES(?,?,?,?,?,?)`);
 
+        // Execute all queries
         await Promise.all([
-            db.query(insertQuery1, [semester, section, time,day,subject_id]),
-            db.query(insertQuery2, [semester, section,time, day,faculty_id,subject_id])
+            db.query(insertQuery1, [semester, section, time, day, subject_id]),
+            db.query(insertLabQuery, [semester, section, time, day, subject_id, lab_name]),
+            ...faculty_id.map((facId, index) => 
+                db.query(facultyInsertQueries[index], [semester, section, time, day, facId, subject_id])
+            )
         ]);
 
-    return res.status(200).json({ message: "Timetable entry inserted successfully" });
-
+        return res.status(200).json({ message: "Lab timetable entry inserted successfully" });
+    }
     } catch (error) {
     console.error("Database error:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -907,23 +988,56 @@ app.post('/addToTimetable',async(req,res)=>{
 
 })
 
-app.post('/getDeletedEntries', (req, res) => {
+app.post('/getDeletedEntries', async (req, res) => {
     const { semester, section } = req.body;
 
     try {
         const fetchQuery = `SELECT * FROM delete_entries WHERE semester_id = ? AND section_id = ?`;
+        const fetchQueryLab = `SELECT subject.name as subject_name, l.* 
+                                                FROM lab_deleted_entries AS l 
+                                                JOIN subject ON subject.id = l.subject_id 
+                                                WHERE l.semester_id = ? AND l.section_id = ?`;
+        
+        const [lectureResults, labResults] = await Promise.all([
+            new Promise((resolve, reject) => {
+                db.query(fetchQuery, [semester, section], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            }),
+            new Promise((resolve, reject) => {
+                db.query(fetchQueryLab, [semester, section], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            })
+        ]);
 
-        db.query(fetchQuery, [semester, section], (err, results) => {
-            if (err) {
-                console.error("Error fetching deleted entries:", err);
-                return res.status(500).json({ error: "Database query failed" });
-            }
+        // Format lecture results
+        const formattedLecture = lectureResults.map(entry => ({
+            ...entry,
+            faculty_id: [entry.faculty_id],
+            faculty_name: [entry.faculty_name]
+        }));
 
-            console.log("Deleted Entries Retrieved:", results); // Debugging Log
+        // Format lab results
+        const formattedLab = labResults.map(entry => ({
+            ...entry,
+            faculty_id: [
+                entry.faculty_id_A,
+                entry.faculty_id_B,
+                entry.faculty_id_C
+            ].filter(Boolean),
+            faculty_name: [
+                entry.faculty_name_A,
+                entry.faculty_name_B,
+                entry.faculty_name_C
+            ].filter(Boolean)
+        }));
 
-            // Instead of 404, return an empty array if no results are found
-            return res.status(200).json(results || []);
-        });
+        const combinedResults = [...formattedLecture, ...formattedLab];
+        
+        return res.status(200).json(combinedResults);
 
     } catch (error) {
         console.error("Database error:", error);
@@ -933,14 +1047,22 @@ app.post('/getDeletedEntries', (req, res) => {
 
 
 app.post('/removeDeletedEntry', async (req, res) => {
-    const { semester, section, day, time } = req.body;
+    const { semester, section, day, time, subject_type, subject_id } = req.body;
 
     try {
-        const deleteQuery = `
-            DELETE FROM delete_entries 
-            WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ?`;
+        let deleteQuery = '';
 
-        await db.query(deleteQuery, [semester, section, day, time]);
+        if (subject_type === 'Lecture') {
+            deleteQuery = `
+                DELETE FROM delete_entries 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ? AND subject_id = ?`;
+        } else if (subject_type === 'Lab') {
+            deleteQuery = `
+                DELETE FROM lab_deleted_entries 
+                WHERE semester_id = ? AND section_id = ? AND day = ? AND time = ? AND subject_id = ?`;
+        }
+
+        await db.query(deleteQuery, [semester, section, day, time, subject_id]);
 
         return res.status(200).json({ message: "Deleted entry removed from records" });
     } catch (error) {
@@ -951,19 +1073,36 @@ app.post('/removeDeletedEntry', async (req, res) => {
 
 
 app.post('/getFaculty', (req, res) => {
-    const { section_id, semester_id, subject_id } = req.body;
+    const { section_id, semester_id, subject_id,subject_type } = req.body;
 
     if (!section_id || !semester_id || !subject_id) {
         return res.status(400).json({ error: "Missing required parameters" });
     }
 
-    const query = `
-        SELECT faculty.id AS faculty_id,faculty.name AS faculty_name,subject.name AS subject_name 
-                         FROM fac_sec_map AS fp 
-                         INNER JOIN faculty ON fp.faculty_id = faculty.id 
-                         INNER JOIN subject ON fp.subject_id = subject.id 
-                         WHERE fp.section_id = ? AND fp.semester_id = ? and subject_id = ?;
-    `;
+    let query = "";
+    if(subject_type === "Lecture"){
+        query = `
+            SELECT faculty.id AS faculty_id,faculty.name AS faculty_name,subject.name AS subject_name 
+                            FROM fac_sec_map AS fp 
+                            INNER JOIN faculty ON fp.faculty_id = faculty.id 
+                            INNER JOIN subject ON fp.subject_id = subject.id 
+                            WHERE fp.section_id = ? AND fp.semester_id = ? and subject_id = ?;
+        `;
+    }
+
+    else if(subject_type==="Lab"){
+        query = `
+            SELECT 
+                f1.name AS faculty_name_A, 
+                f2.name AS faculty_name_B, 
+                f3.name AS faculty_name_C,
+                flm.*
+            FROM faculty_lab_mapping flm
+            LEFT JOIN faculty f1 ON flm.faculty_id_A = f1.id
+            LEFT JOIN faculty f2 ON flm.faculty_id_B = f2.id
+            LEFT JOIN faculty f3 ON flm.faculty_id_C = f3.id
+            WHERE flm.section_id = ? AND flm.semester_id = ? and subject_id = ?;`;
+    }
 
     db.query(query, [section_id, semester_id, subject_id], (err, results) => {
         if (err) {
@@ -980,44 +1119,109 @@ app.post('/getFaculty', (req, res) => {
 });
 
 app.post('/checkCellAvailability', (req, res) => {
-    const { faculty_id, semester_id, section_id } = req.body;
+    const { faculty_id, semester_id, section_id, subject_type, lab_name } = req.body;
 
-    const query1 = `
-        SELECT day, time FROM timetable 
-        WHERE semester_id = ? AND section_id = ?;
-    `;
+    if (subject_type === 'Lecture') {
+        const query1 = `
+            SELECT day, time FROM timetable 
+            WHERE semester_id = ? AND section_id = ?;
+        `;
 
-    const query2 = `
-        SELECT day, time FROM faculty_timetable 
-        WHERE faculty_id = ?;
-    `;
+        const query2 = `
+            SELECT day, time FROM faculty_timetable 
+            WHERE faculty_id = ?;
+        `;
 
-    Promise.all([
-        new Promise((resolve, reject) => {
-            db.query(query1, [semester_id, section_id], (err, results) => {
-                if (err) reject(err);
-                else resolve(results);
-            });
-        }),
-        new Promise((resolve, reject) => {
-            db.query(query2, [faculty_id], (err, results) => {
-                if (err) reject(err);
-                else resolve(results);
-            });
+        Promise.all([
+            new Promise((resolve, reject) => {
+                db.query(query1, [semester_id, section_id], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            }),
+            new Promise((resolve, reject) => {
+                db.query(query2, [faculty_id], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            })
+        ])
+        .then(([timetableResults, facultyResults]) => {
+
+            const combinedResults = [
+                ...(timetableResults || []),
+                ...(facultyResults || [])
+            ];
+
+            const uniqueResults = Array.from(
+                new Set(combinedResults.map(JSON.stringify))
+            ).map(JSON.parse);
+
+            res.status(200).json(uniqueResults);
         })
-    ])
-    .then(([timetableResults, facultyResults]) => {
-        const combinedResults = [...timetableResults, ...facultyResults];
+        .catch(err => {
+            console.error("Error checking lecture availability:", err);
+            res.status(500).json({ error: "Database query failed" });
+        });
 
-        const uniqueResults = Array.from(new Set(combinedResults.map(JSON.stringify))).map(JSON.parse);
+    } else if (subject_type === 'Lab') {
+        const query1 = `
+            SELECT day, time FROM lab_timetable WHERE lab_name = ?;
+        `;
 
-        res.status(200).json(uniqueResults);
-    })
-    .catch(err => {
-        console.error("Error checking cell availability:", err);
-        res.status(500).json({ error: "Database query failed" });
-    });
+        const query2 = `
+            SELECT day, time FROM faculty_timetable 
+            WHERE faculty_id IN (${faculty_id.filter(id => id !== null).map(() => '?').join(',')});
+        `;
+
+        const query3 = `
+            SELECT day, time FROM timetable 
+            WHERE semester_id = ? AND section_id = ?;
+        `;
+
+        const validFacultyIds = faculty_id.filter(id => id !== null);
+
+        Promise.all([
+            new Promise((resolve, reject) => {
+                db.query(query1, [lab_name], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            }),
+            new Promise((resolve, reject) => {
+                db.query(query2, validFacultyIds, (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            }),
+            new Promise((resolve, reject) => {
+                db.query(query3, [semester_id, section_id], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            })
+        ])
+        .then(([labResults, facultyResults, timetableResults]) => {
+
+            const combinedResults = [
+                ...(labResults || []),
+                ...(facultyResults || []),
+                ...(timetableResults || [])
+            ];
+
+            const uniqueResults = Array.from(
+                new Set(combinedResults.map(JSON.stringify))
+            ).map(JSON.parse);
+
+            res.status(200).json(uniqueResults);
+        })
+        .catch(err => {
+            console.error("Error checking lab availability:", err);
+            res.status(500).json({ error: "Database query failed" });
+        });
+    }
 });
+
 
 app.get('/deleteData', async (req, res) => {
     try {
