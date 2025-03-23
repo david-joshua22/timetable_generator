@@ -3,8 +3,11 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import db from './connection.js';
 import getDataAndSchedule from './algorithm/algo.js';
+import dotenv from "dotenv";
 
-const SECRET_KEY = 'AJH7O9q5MHhJbzC5GidFE1fsmVyTnQqU';
+dotenv.config();
+
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const app = express();
 
