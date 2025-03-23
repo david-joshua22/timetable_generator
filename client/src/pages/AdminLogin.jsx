@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
 import Image from 'react-bootstrap/Image';
 import { FiLogOut } from "react-icons/fi";
-import { FaUserPlus, FaBook, FaMapMarkedAlt, FaClipboard, FaEye, FaCalendarAlt, FaChalkboardTeacher, FaEdit ,FaFlask,FaUserMd, FaUser} from "react-icons/fa";
+import { FaUserPlus, FaBook, FaMapMarkedAlt, FaClipboard, FaEye, FaCalendarAlt, FaChalkboardTeacher, FaEdit ,FaFlask,FaUserMd} from "react-icons/fa";
 import "../styles/AdminLogin.css";
 import { userContext } from "../context/UserContext";
 import Faculty from "./Faculty";
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
               <h1>Welcome to Admin Dashboard</h1>
               <p className="fst-italic">Here you can manage faculty, subjects, and electives and Generate Timetable.</p>
               <div style={{ maxHeight: '70vh', overflow: 'hidden' }} className="shadow" >
-                <Image src="../../public/cse_department.png" fluid className="text-center p-3 border" style={{ borderWidth: '1px', borderColor: '#6c757d', maxHeight: '100%', width: 'auto' }} />
+                <Image src="./cse_department.png" fluid className="text-center p-3 border" style={{ borderWidth: '1px', borderColor: '#6c757d', maxHeight: '100%', width: 'auto' }} />
               </div>
             </div>
           } />
