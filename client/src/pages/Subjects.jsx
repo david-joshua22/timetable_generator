@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/InputContainer.css';
 
-function Subjects(){
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function Subjects() {
     const [subject, setFaculty] = useState({ id: '', name: '', type: '', hours_per_week:'',semester:''});
     const navigate = useNavigate();
 
@@ -13,7 +15,7 @@ function Subjects(){
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        fetch('http://localhost:3000/addSubjects', {
+        fetch(`${API_BASE_URL}/addSubjects`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -21,10 +23,10 @@ function Subjects(){
             body: JSON.stringify(subject)
         })
         .then(response => response.json())
-        .then(data =>{
+        .then(data => {
             console.log('Success:', data),
             navigate('/admin/subjects')
-    })
+        })
         .catch(error => console.error('Error:', error));
     };
     return(

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { FaMagic, FaTrash, FaPlus } from 'react-icons/fa';
 import '../styles/DisplayTimetable.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const EditTimetable = () => {
     const [semester, setSemester] = useState('');
     const [section, setSection] = useState('');
@@ -24,7 +26,7 @@ const EditTimetable = () => {
     useEffect(() => {
         const fetchDeletedEntries = async () => {
             try {
-                const response = await fetch('http://localhost:3000/getDeletedEntries', {
+                const response = await fetch(`${API_BASE_URL}/getDeletedEntries`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ semester, section })
@@ -71,7 +73,7 @@ const EditTimetable = () => {
         setShowResults(false);
 
         try {
-            const response = await fetch('http://localhost:3000/getTimetable', {
+            const response = await fetch(`${API_BASE_URL}/getTimetable`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ semester, section }),
@@ -97,7 +99,7 @@ const EditTimetable = () => {
         
         try {
             // Use values directly from the deleted entry
-            const response = await fetch('http://localhost:3000/checkCellAvailability', {
+            const response = await fetch(`${API_BASE_URL}/checkCellAvailability`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -137,7 +139,7 @@ const EditTimetable = () => {
         }
         const { subject_id, name, type } = selectedEntry; 
     
-        const facultyResponse = await fetch("http://localhost:3000/getFaculty", {
+        const facultyResponse = await fetch(`${API_BASE_URL}/getFaculty`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
@@ -203,7 +205,7 @@ const EditTimetable = () => {
         if (!entry) return;
     
         try {
-            const response = await fetch('http://localhost:3000/addToTimetable', {
+            const response = await fetch(`${API_BASE_URL}/addToTimetable`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -223,7 +225,7 @@ const EditTimetable = () => {
             if (!response.ok) throw new Error('Failed to add to timetable');
             console.log("Entry added successfully!");
     
-            const deleteResponse = await fetch('http://localhost:3000/removeDeletedEntry', {
+            const deleteResponse = await fetch(`${API_BASE_URL}/removeDeletedEntry`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -261,7 +263,7 @@ const EditTimetable = () => {
     
     const fetchDeletedEntries = async () => {
         try {
-            const response = await fetch('http://localhost:3000/getDeletedEntries', {
+            const response = await fetch(`${API_BASE_URL}/getDeletedEntries`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ semester, section })
@@ -300,7 +302,7 @@ const EditTimetable = () => {
     
         try {
             console.log("Deleting entry:", selectedCell); // Debugging log
-            const response = await fetch('http://localhost:3000/editTimetable', {
+            const response = await fetch(`${API_BASE_URL}/editTimetable`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

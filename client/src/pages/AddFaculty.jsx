@@ -2,6 +2,9 @@ import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from 'react-router-dom';
 
+// Use the environment variable for the base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function AFaculty() {
     const [faculty, setFaculty] = useState({ id: '', name: '', department: '' });
     const [loading, setLoading] = useState(false);
@@ -19,7 +22,7 @@ function AFaculty() {
         setError(null);  // Reset error message on new submit attempt
         setSuccess(false); // Reset success state
 
-        fetch('http://localhost:3000/addFaculty', {
+        fetch(`${API_BASE_URL}/addFaculty`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

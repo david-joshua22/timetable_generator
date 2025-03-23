@@ -15,15 +15,15 @@ function SubjectTable() {
     const [editSubject, setEditSubject] = useState({
         id: '', semester_id: '', name: '', type: '', hours_per_week: ''
     });
-
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     useEffect(() => {
         fetchSubjects();
     }, [selectedSemester]); // Add selectedSemester to dependency array
 
     const fetchSubjects = () => {
         const url = selectedSemester === 'all' 
-            ? 'http://localhost:3000/subjects'
-            : `http://localhost:3000/subjects?semester=${selectedSemester}`;
+            ? `${API_BASE_URL}/subjects`
+            : `${API_BASE_URL}/subjects?semester=${selectedSemester}`;
             
         fetch(url)
             .then(response => response.json())
@@ -49,7 +49,7 @@ function SubjectTable() {
     const confirmDelete = () => {
         if (deleteIds.length > 0) {
             Promise.all(deleteIds.map(id =>
-                fetch(`http://localhost:3000/deleteSubject/${id}`, { method: 'DELETE' })
+                fetch(`${API_BASE_URL}/deleteSubject/${id}`, { method: 'DELETE' })
             ))
                 .then(() => {
                     fetchSubjects();
@@ -71,7 +71,7 @@ function SubjectTable() {
     };
 
     const saveEdit = () => {
-        fetch(`http://localhost:3000/updateSubject/${editSubject.id}`, {
+        fetch(`${API_BASE_URL}/updateSubject/${editSubject.id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(editSubject)

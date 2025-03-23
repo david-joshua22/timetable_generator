@@ -6,6 +6,8 @@ import '../styles/AddFaculty.css';
 import { FaTrashAlt } from 'react-icons/fa';
 import Modal from 'react-bootstrap/Modal';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function DFacSub({ selectedSemester, refreshMappings }) {
     const [mappings, setMappings] = useState([]);
     const [labMappings, setLabMappings] = useState([]);
@@ -26,14 +28,14 @@ function DFacSub({ selectedSemester, refreshMappings }) {
     }, [selectedIds, mappings, labMappings]);
 
     const fetchMappings = () => {
-        fetch(`http://localhost:3000/getFacSubMap?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/getFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(setMappings)
             .catch(console.error);
     };
 
     const fetchLabMappings = () => {
-        fetch(`http://localhost:3000/getLabFacSubMap?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/getLabFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(setLabMappings)
             .catch(console.error);
@@ -60,7 +62,7 @@ function DFacSub({ selectedSemester, refreshMappings }) {
             selectedIds.map(id => {
                 const isLabMapping = labMappings.some(lab => lab.id === id);
                 const endpoint = isLabMapping ? 'deleteLabFacSubMap' : 'deleteFacSubMap';
-                return fetch(`http://localhost:3000/${endpoint}/${id}`, { method: 'DELETE' });
+                return fetch(`${API_BASE_URL}/${endpoint}/${id}`, { method: 'DELETE' });
             })
         )
             .then(() => {

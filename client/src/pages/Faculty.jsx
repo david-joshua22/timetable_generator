@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 import '../styles/AddFaculty.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Faculty() {
   const [faculty, setFaculty] = useState([]);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -26,10 +28,39 @@ function Faculty() {
   }, [deleteIds, faculty]);
 
   const fetchFaculty = () => {
-    fetch('http://localhost:3000/faculty')
+    fetch(`${API_BASE_URL}/faculty`)
       .then(response => response.json())
       .then(data => setFaculty(data))
       .catch(error => console.error('Error fetching faculty data:', error));
+  };
+
+  const saveEdit = () => {
+    fetch(`${API_BASE_URL}/updateFaculty/${editFaculty.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editFaculty.name, department: editFaculty.department })
+    })
+      .then(() => {
+        fetchFaculty();
+        setShowEditModal(false);
+      })
+      .catch(error => console.error('Error updating faculty:', error));
+  };
+
+  const confirmDelete = () => {
+    if (deleteIds.length > 0) {
+      Promise.all(deleteIds.map(id =>
+        fetch(`${API_BASE_URL}/deleteFaculty/${id}`, {
+          method: 'DELETE',
+        })
+      ))
+        .then(() => {
+          fetchFaculty();
+          setDeleteIds([]);
+        })
+        .catch(error => console.error('Error deleting faculty:', error));
+    }
+    setShowConfirmation(false);
   };
 
   const handleCheckboxChange = (id) => {
@@ -56,37 +87,8 @@ function Faculty() {
     setEditFaculty(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const saveEdit = () => {
-    fetch(`http://localhost:3000/updateFaculty/${editFaculty.id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editFaculty.name, department: editFaculty.department })
-    })
-      .then(() => {
-        fetchFaculty();
-        setShowEditModal(false);
-      })
-      .catch(error => console.error('Error updating faculty:', error));
-  };
-
   const handleDeleteSelected = () => {
     setShowConfirmation(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteIds.length > 0) {
-      Promise.all(deleteIds.map(id =>
-        fetch(`http://localhost:3000/deleteFaculty/${id}`, {
-          method: 'DELETE',
-        })
-      ))
-        .then(() => {
-          fetchFaculty();
-          setDeleteIds([]);
-        })
-        .catch(error => console.error('Error deleting faculty:', error));
-    }
-    setShowConfirmation(false);
   };
 
   return (

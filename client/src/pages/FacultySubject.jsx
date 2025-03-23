@@ -5,6 +5,8 @@ import '../styles/FacultySubject.css';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function FacultySubject() {
     const [faculty, setFaculty] = useState([]);
     const [subjects, setSubjects] = useState([]);
@@ -25,7 +27,7 @@ function FacultySubject() {
 
     useEffect(() => {
         if (selectedSemester) {
-            fetch(`http://localhost:3000/getSubjectsBySemester?semester=${selectedSemester}`)
+            fetch(`${API_BASE_URL}/getSubjectsBySemester?semester=${selectedSemester}`)
                 .then((response) => response.json())
                 .then((data) => {
                     setSubjects(data);
@@ -38,13 +40,12 @@ function FacultySubject() {
                 .catch((error) => console.error('Error fetching subjects by semester:', error));
         }
 
-        fetch('http://localhost:3000/faculty')
+        fetch(`${API_BASE_URL}/faculty`)
             .then((response) => response.json())
             .then((data) => setFaculty(data))
             .catch((error) => console.error('Error fetching faculty data:', error));
 
-        // Fetch labs
-        fetch('http://localhost:3000/getLab')
+        fetch(`${API_BASE_URL}/getLab`)
             .then((response) => response.json())
             .then((data) => setLabs(data))
             .catch((error) => console.error('Error fetching labs:', error));
@@ -69,7 +70,7 @@ function FacultySubject() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const apiEndpoint = isLab ? 'http://localhost:3000/labEntry' : 'http://localhost:3000/mapSubFac';
+        const apiEndpoint = isLab ? `${API_BASE_URL}/labEntry` : `${API_BASE_URL}/mapSubFac`;
 
         const requestBody = isLab
             ? {
@@ -97,7 +98,6 @@ function FacultySubject() {
             .then((data) => {
                 console.log('Success:', data);
                 setRefreshMappings((prev) => !prev);
-
                 setSelectedValues({
                     subject: '',
                     faculty: '',
@@ -106,8 +106,7 @@ function FacultySubject() {
                     lab_name: '',
                     class: ''
                 });
-
-                setIsLab(false); // Reset lab state
+                setIsLab(false);
             })
             .catch((error) => console.error('Error:', error));
     };
@@ -116,8 +115,8 @@ function FacultySubject() {
         if (!deleteTarget) return;
 
         const apiEndpoint = deleteTarget.isLab 
-            ? `http://localhost:3000/deleteLabMapping/${deleteTarget.id}`
-            : `http://localhost:3000/deleteMapping/${deleteTarget.id}`;
+            ? `${API_BASE_URL}/deleteLabMapping/${deleteTarget.id}`
+            : `${API_BASE_URL}/deleteMapping/${deleteTarget.id}`;
 
         fetch(apiEndpoint, {
             method: 'DELETE',

@@ -8,7 +8,9 @@ import ExcelJS from "exceljs";
 import {saveAs} from 'file-saver';
 import '../styles/FacultyDashboard.css';
 
-const FacultyDashboard = () => {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function FacultyDashboard() {
     const downloadPDF = () => {
         const input = document.getElementById("timetable-container");
       
@@ -116,43 +118,38 @@ const FacultyDashboard = () => {
     const days = {1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday'};
 
     useEffect(() => {
-        fetch('http://localhost:3000/faculty')
+        fetch(`${API_BASE_URL}/faculty`)
             .then(response => response.json())
             .then(data => setFaculty(data))
             .catch(error => console.error('Error fetching faculty data:', error));
     }, []);
 
-    const handleChange = (e) => {
-        setSelectedFaculty(e.target.value);
-    };
     const fetchTimetable = async () => {
-        
         try {
-          const response = await fetch('http://localhost:3000/getFacultyTimetable', { 
+          const response = await fetch(`${API_BASE_URL}/getFacultyTimetable`, { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ selectedFaculty}),
+            body: JSON.stringify({ selectedFaculty }),
           });
       
           if (!response.ok) throw new Error('Failed to fetch timetable');
       
           const data = await response.json();
           setTimetable(data);  
-          setShowResults(true); // Set showResults after data is fetched
+          setShowResults(true);
           console.log(data);
-      
         } catch (error) {
           console.error("Fetch error:", error);
           setShowResults(true); 
         }
-      }
-      const fetchClass = async () => {
-        
+    }
+
+    const fetchClass = async () => {
         try {
-          const response = await fetch('http://localhost:3000/getClassFaculty', { 
+          const response = await fetch(`${API_BASE_URL}/getClassFaculty`, { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({selectedFaculty}),
+            body: JSON.stringify({ selectedFaculty }),
           });
       
           if (!response.ok) throw new Error('Failed to fetch faculty data');
@@ -163,7 +160,10 @@ const FacultyDashboard = () => {
         } catch (error) {
           console.error("Fetch error:", error);
         }
-      };
+    };
+    const handleChange = (e) => {
+        setSelectedFaculty(e.target.value);
+    };
     return (
         <div className="box-1">
             <div className="box-2">

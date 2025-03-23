@@ -8,6 +8,8 @@ import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
 import { userContext } from "../context/UserContext"; // Import userContext
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Login() {
   const navigate = useNavigate();
   const { setAuthenticated, setRole } = useContext(userContext); // Use context to update auth state
@@ -32,7 +34,7 @@ function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    fetch("http://localhost:3000/login", {
+    fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

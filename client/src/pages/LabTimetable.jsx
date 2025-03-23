@@ -8,6 +8,9 @@ import ExcelJS from "exceljs";
 import {saveAs} from 'file-saver';
 import '../styles/DisplayTimetable.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+
 const LabTimetable = () => {
     const downloadPDF = () => {
         const input = document.getElementById("timetable-container");
@@ -118,7 +121,7 @@ const LabTimetable = () => {
     const days = {1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday'};
 
     useEffect(() => {
-        fetch('http://localhost:3000/getLab')
+        fetch(`${API_BASE_URL}/getLab`)
             .then(response => response.json())
             .then(data => setLabs(data))
             .catch(error => console.error('Error fetching lab data:', error));
@@ -129,7 +132,7 @@ const LabTimetable = () => {
     };
     const fetchTimetable = async () => {
         try {
-          const response = await fetch('http://localhost:3000/getLabTimetable', {  
+          const response = await fetch(`${API_BASE_URL}/getLabTimetable`, {  
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ selectedLab }),  
@@ -149,7 +152,7 @@ const LabTimetable = () => {
       }
       const fetchClass = async () => {
         try {
-            const response = await fetch('http://localhost:3000/getLabFacTime', {
+            const response = await fetch(`${API_BASE_URL}/getLabFacTime`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ selectedLab }),

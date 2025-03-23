@@ -9,7 +9,9 @@ import {saveAs} from 'file-saver';
 import '../styles/Display.css';
 import '../styles/DisplayTimetable.css'
 
-const Display = () => {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function Display() {
   
   const tableRef = useRef(null);
 
@@ -145,7 +147,7 @@ const Display = () => {
       setShowResults(false); // Hide previous results
   
       try {
-          const response = await fetch('http://localhost:3000/getTimetable', { 
+          const response = await fetch(`${API_BASE_URL}/getTimetable`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ semester, section }),
@@ -175,7 +177,7 @@ const Display = () => {
       setShowResults(false); // Hide previous results
   
       try {
-          const response = await fetch('http://localhost:3000/getFacOfClass', { 
+          const response = await fetch(`${API_BASE_URL}/getFacOfClass`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ semester, section }),
@@ -204,7 +206,7 @@ const Display = () => {
         setShowResults(false);
 
         try {
-            const response = await fetch('http://localhost:3000/getElectiveOfClass', {
+            const response = await fetch(`${API_BASE_URL}/getElectiveOfClass`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ semester }),

@@ -5,6 +5,8 @@ import { Table } from 'react-bootstrap';
 import '../styles/DFacSub.css';
 import '../styles/AddFaculty.css'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function GFacSub({ selectedSemester, refreshMappings }) {
     const [mappings, setMappings] = useState([]);
     const [labMappings, setLabMappings] = useState([]);
@@ -20,14 +22,14 @@ function GFacSub({ selectedSemester, refreshMappings }) {
     }, [mappings, labMappings]);
 
     const fetchMappings = () => {
-        fetch(`http://localhost:3000/getFacSubMap?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/getFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(data => setMappings(data))
             .catch(error => console.error('Error fetching regular mappings:', error));
     };
 
     const fetchLabMappings = () => {
-        fetch(`http://localhost:3000/getLabFacSubMap?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/getLabFacSubMap?semester=${selectedSemester}`)
             .then(response => response.json())
             .then(data => setLabMappings(data))
             .catch(error => console.error('Error fetching lab mappings:', error));

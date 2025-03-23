@@ -6,6 +6,9 @@ import Button from 'react-bootstrap/Button';
 import { FaTrashAlt } from 'react-icons/fa';
 import { FaPencil } from 'react-icons/fa6';
 
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function AddLab() {
     const [lab, setLab] = useState({ lab_name: ''});
     const [loading, setLoading] = useState(false);
@@ -23,7 +26,7 @@ function AddLab() {
     }, []);
 
     const fetchLabs = () => {
-        fetch('http://localhost:3000/getLab')
+        fetch(`${API_BASE_URL}/getLab`)
             .then(response => response.json())
             .then(data => setLabs(data));
     };
@@ -37,7 +40,7 @@ function AddLab() {
         setLoading(true);
         setError(null);
 
-        fetch('http://localhost:3000/addLab', {
+        fetch(`${API_BASE_URL}/addLab`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lab)
@@ -62,7 +65,7 @@ function AddLab() {
 
     const handleDelete = () => {
         if (!labToDelete) return;
-        fetch(`http://localhost:3000/deleteLab?lab_name=${encodeURIComponent(labToDelete)}`, {
+        fetch(`${API_BASE_URL}/deleteLab?lab_name=${encodeURIComponent(labToDelete)}`, {
             method: 'DELETE'
         })
         .then(() => {
@@ -81,7 +84,7 @@ function AddLab() {
     };
 
     const handleUpdate = () => {
-        fetch('http://localhost:3000/updateLab', {
+        fetch(`${API_BASE_URL}/updateLab`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ old_lab_name: currentLab.lab_name, new_lab_name: lab.lab_name })

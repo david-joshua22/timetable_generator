@@ -3,6 +3,9 @@ import { Button, Form, Alert, Table } from 'react-bootstrap';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import '../styles/Container.css';
 
+// Use the environment variable for the base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function AddElective() {
   const [electiveSections, setElectiveSections] = useState([]);
   const [electiveId, setElectiveId] = useState([]);
@@ -25,21 +28,21 @@ function AddElective() {
   useEffect(() => {
     fetchElectiveSection();
     fetchElectiveId();
-    fetch('http://localhost:3000/faculty')
+    fetch(`${API_BASE_URL}/faculty`)
       .then(response => response.json())
       .then(data => setFaculty(data))
       .catch(error => console.error('Error fetching faculty data:', error));
   }, []);
 
   const fetchElectiveSection = (semesterId) => {
-    fetch(`http://localhost:3000/getElectiveSections?semester=${semesterId}`)
+    fetch(`${API_BASE_URL}/getElectiveSections?semester=${semesterId}`)
       .then(response => response.json())
       .then(data => setElectiveSections(data))
       .catch(error => console.error('Error fetching elective sections:', error));
   };
 
   const fetchElectiveId = (semesterId) => {
-    fetch(`http://localhost:3000/getElectiveId?semester=${semesterId}`)
+    fetch(`${API_BASE_URL}/getElectiveId?semester=${semesterId}`)
       .then(response => response.json())
       .then(data => setElectiveId(data))
       .catch(error => console.error('Error fetching elective IDs:', error));
@@ -63,7 +66,7 @@ function AddElective() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch('http://localhost:3000/addElective', {
+    fetch(`${API_BASE_URL}/addElective`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(selectedValues),

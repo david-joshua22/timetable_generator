@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { FaTrashAlt } from 'react-icons/fa';
 import '../styles/DisplayElectives.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function DisplayElectives() {
   const [electives, setElectives] = useState([]);
   const [filteredElectives, setFilteredElectives] = useState([]);
@@ -34,7 +36,7 @@ function DisplayElectives() {
   }, [selectedSemester, electives]);
 
   const fetchElectives = () => {
-    fetch('http://localhost:3000/getElectives')
+    fetch(`${API_BASE_URL}/getElectives`)
       .then(response => response.json())
       .then(data => {
         setElectives(data);
@@ -62,7 +64,7 @@ function DisplayElectives() {
     if (deleteIds.length > 0) {
         Promise.all(deleteIds.map(compositeKey => {
             console.log('Attempting to delete:', compositeKey);
-            return fetch(`http://localhost:3000/deleteElective/${compositeKey}`, { method: 'DELETE' })
+            return fetch(`${API_BASE_URL}/deleteElective/${compositeKey}`, { method: 'DELETE' })
                 .then(response => {
                     if (!response.ok) {
                         console.error('Failed to delete:', compositeKey, response.status);
@@ -71,25 +73,23 @@ function DisplayElectives() {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Delete response:', data); // Log server response
+                    console.log('Delete response:', data);
                     return data;
                 });
         }))
         .then(responses => {
           console.log('All deletion responses:', responses);
-          // Check if all deletions were successful
           if (responses.every(response => response.completed)) {
-              fetchElectives(); // Refresh the electives list
-              setDeleteIds([]); // Clear selected items
-              setSelectAll(false); // Uncheck select all
-              setShowConfirmation(false); // Close confirmation modal
+              fetchElectives();
+              setDeleteIds([]);
+              setSelectAll(false);
+              setShowConfirmation(false);
           } else {
               alert('Some electives could not be deleted. Please try again.');
           }
       })
         .catch(error => {
             console.error('Error deleting electives:', error);
-            // Optionally show error to user
         });
     }
   };

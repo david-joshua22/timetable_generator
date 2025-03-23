@@ -6,6 +6,8 @@ import Modal from 'react-bootstrap/Modal';
 import '../styles/App.css';
 import '../styles/ViewMappings.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function ViewMappings() {
     const [selectedSemester, setSelectedSemester] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -26,7 +28,7 @@ function ViewMappings() {
 
     const handleGenerateConfirmed = () => {
         setShowGenerateModal(false);
-        fetch(`http://localhost:3000/generate?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/generate?semester=${selectedSemester}`)
             .then(response => {
                 if (response.ok) {
                     return response.text();
@@ -51,7 +53,7 @@ function ViewMappings() {
 
     const handleDeleteConfirmed = () => {
         setShowDeleteModal(false);
-        fetch(`http://localhost:3000/deleteData?semester=${selectedSemester}`)
+        fetch(`${API_BASE_URL}/deleteData?semester=${selectedSemester}`)
             .then(response => {
                 if (response.ok) {
                     return response.text();
@@ -62,12 +64,12 @@ function ViewMappings() {
             .then(() => {
                 setDeleteResult(`Semester ${selectedSemester} data deleted`);
                 setShowResultModal(true);
-                setRefreshKey(prevKey => prevKey + 1); // Add this line to trigger refresh
+                setRefreshKey(prevKey => prevKey + 1);
             })
             .catch(() => {
                 setDeleteResult(`Semester ${selectedSemester} data deleted`);
                 setShowResultModal(true);
-                setRefreshKey(prevKey => prevKey + 1); // Add this line to trigger refresh
+                setRefreshKey(prevKey => prevKey + 1);
             });
     };
 
