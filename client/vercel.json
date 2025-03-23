@@ -1,0 +1,72 @@
+{
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/admin/*",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/sfmap",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/subjects",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/addFaculty",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/addSubjects",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/faculty",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/addLab",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/display",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/labTimetable",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/addElective",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/displayElective",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/viewMapping",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/editTimetable",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/student",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/displayFaculty",
+      "dest": "/index.html"
+    }
+  ]
+}
