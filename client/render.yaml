@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: client
+    env: node
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    startCommand: serve -s build
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /
+        destination: /index.html
+      - type: rewrite
+        source: /login
+        destination: /index.html
+      - type: rewrite
+        source: /admin/*
+        destination: /index.html
+      - type: rewrite
+        source: /sfmap
+        destination: /index.html
+      - type: rewrite
+        source: /subjects
+        destination: /index.html
+      - type: rewrite
+        source: /addFaculty
+        destination: /index.html
+      - type: rewrite
+        source: /addSubjects
+        destination: /index.html
+      - type: rewrite
+        source: /faculty
+        destination: /index.html
+      - type: rewrite
+        source: /addLab
+        destination: /index.html
+      - type: rewrite
+        source: /display
+        destination: /index.html
+      - type: rewrite
+        source: /labTimetable
+        destination: /index.html
+      - type: rewrite
+        source: /addElective
+        destination: /index.html
+      - type: rewrite
+        source: /displayElective
+        destination: /index.html
+      - type: rewrite
+        source: /viewMapping
+        destination: /index.html
+      - type: rewrite
+        source: /editTimetable
+        destination: /index.html
+      - type: rewrite
+        source: /student
+        destination: /index.html
+      - type: rewrite
+        source: /displayFaculty
+        destination: /index.html
