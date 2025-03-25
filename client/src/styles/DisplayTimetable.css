@@ -171,9 +171,9 @@ button {
   .timetable-table th,
   .timetable-table td,
   .labTimeTable th,
-  .labTimeTable td{
+  .labTimeTable td {
     min-width: auto; 
-    font-size: 12px;
+    font-size: 12px !important; /* Ensure font size is applied */
   }
 
   .hide-overflow-within {
@@ -181,9 +181,9 @@ button {
     overflow-y: auto;
   }
 
-  .small-screen{
+  .small-screen {
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
   }

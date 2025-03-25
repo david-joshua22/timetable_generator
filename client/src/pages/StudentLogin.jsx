@@ -17,22 +17,29 @@ function Display() {
 
   const downloadPDF = () => {
     const input = document.getElementById("timetable-container");
-  
+
     html2canvas(input, {
-      scale: 4, 
-      useCORS: true,
-      letterRendering: true, 
+        scale:  4,  
+        useCORS: true,
+        letterRendering: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: input.scrollWidth,  
+        height: input.scrollHeight 
     }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png", 1.0);
-      const pdf = new jsPDF("p", "mm", "a4");
-  
-      const imgWidth = 190;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
-      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight, "", "FAST");
-      pdf.save("Timetable CSE-"+timetable[0].semester_id+timetable[0].section_id+".pdf");
+        const imgData = canvas.toDataURL("image/png", 1.0);
+        const pdf = new jsPDF("p", "mm", "a4");
+
+        const imgWidth = 190;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        const maxHeight = 270;  
+        const finalHeight = imgHeight > maxHeight ? maxHeight : imgHeight;
+
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, finalHeight, "", "FAST");
+        pdf.save(`Timetable_CSE-${timetable[0].semester_id}${timetable[0].section_id}.pdf`);
     });
-  };
+};
 
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();

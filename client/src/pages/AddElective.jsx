@@ -4,7 +4,6 @@ import { Button, Form, Alert, Table } from 'react-bootstrap';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import '../styles/Container.css';
 
-// Use the environment variable for the base URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function AddElective() {
