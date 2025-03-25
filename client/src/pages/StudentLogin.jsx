@@ -147,7 +147,7 @@ function Display() {
       setShowResults(false); // Hide previous results
   
       try {
-          const response = await fetch(`${API_BASE_URL}/getTimetable`, {
+          const response = await fetch(`${API_BASE_URL}/getTimetable`, { 
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ semester, section }),
@@ -177,7 +177,7 @@ function Display() {
       setShowResults(false); // Hide previous results
   
       try {
-          const response = await fetch(`${API_BASE_URL}/getFacOfClass`, {
+          const response = await fetch(`${API_BASE_URL}/getFacOfClass`, { 
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ semester, section }),
@@ -215,7 +215,6 @@ function Display() {
             if (!response.ok) throw new Error('Failed to fetch elective data');
 
             const data = await response.json();
-            console.log("Fetched Elective Data:", data); // ✅ Log the data
             setElective(data);
             setShowResults(true);
 
@@ -228,13 +227,13 @@ function Display() {
 
 
     return (
-      <div className="display-1" style={{ padding: '50px'}}>
+      <div className="display-1">
         <div className="display-2">
           <div className="timetableHeader">
             <h3 className='text-center'>Display TimeTable</h3>
         </div>
 
-          <div className="d-flex justify-content-center pt-2">
+          <div className="d-flex justify-content-center pt-2 small-screen">
             <Form.Select onChange={(e) => setSemester(e.target.value)} aria-label="Select Semester" className="w-auto m-3">
               <option>Select Semester</option>
               {[1, 2, 3, 4, 5, 6, 7].map((num) => (
@@ -262,7 +261,7 @@ function Display() {
 
         {showResults ? (
             timetable.length > 0 ?  (
-          <div> 
+          <div className='hide-overflow-within'> 
               <div className="rounded-lg shadow-md mb-6 pt-2" id="timetable-container">
                 <h1>Time Table CSE -{timetable[0].semester_id} {timetable[0].section_id}</h1>
               <Table bordered ref={tableRef} className="mt-4 timetable-table">
@@ -277,16 +276,18 @@ function Display() {
                 <tbody>
                   {[1, 2, 3, 4, 5].map((day) => (
                     <tr key={day}>
-                      <td className='days colorChange'>{days[day]}</td>
-                      {[1, 2, 3, 4, 5, 6].map((time) => {
+                    <td className='days colorChange'>{days[day]}</td>
+                    {[1, 2, 3, 4, 5, 6].map((time) => {
                         const subject = timetable.find((item) => item.day === day && item.time === time);
-                        return <td key={time}>{subject ? (
-                            subject.name.includes('(') && subject.name.includes(')')
-                                ? subject.name.match(/\(([^)]+)\)/)[1]
-                                : subject.name
-                        ) : ""}</td>;
-                      })}
-                    </tr>
+                        return <td key={time}>
+                                {subject ? (
+                                    subject.name.includes('(') && subject.name.includes(')')
+                                        ? subject.name.match(/\(([^)]+)\)/)[1]
+                                        : subject.name
+                                ) : ''}
+                            </td>;
+                    })}
+                </tr>
                   ))}
                 </tbody>
               </Table>

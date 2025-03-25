@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react';
 import { Button, Form, Alert, Table } from 'react-bootstrap';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
@@ -72,8 +73,7 @@ function AddElective() {
       body: JSON.stringify(selectedValues),
     })
       .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
+      .then(()=> {
         setElectiveData([...electiveData, selectedValues]);
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);

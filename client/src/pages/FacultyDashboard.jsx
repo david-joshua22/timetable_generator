@@ -137,7 +137,6 @@ function FacultyDashboard() {
           const data = await response.json();
           setTimetable(data);  
           setShowResults(true);
-          console.log(data);
         } catch (error) {
           console.error("Fetch error:", error);
           setShowResults(true); 
@@ -156,7 +155,6 @@ function FacultyDashboard() {
       
           const data = await response.json();
           setClassList(data);
-          console.log(data);
         } catch (error) {
           console.error("Fetch error:", error);
         }
@@ -168,7 +166,7 @@ function FacultyDashboard() {
         <div className="box-1">
             <div className="box-2">
                 <div className="timetableHeader text-center">
-                    <h3>Display TimeTable</h3>
+                    <h3>Display Faculty TimeTable</h3>
                 </div>
     
                 <div className="d-flex justify-content-center">
@@ -194,7 +192,7 @@ function FacultyDashboard() {
                 </div>  
                 {showResults ? (
             timetable.length > 0 ?  (
-          <div> 
+          <div className='hide-overflow-within'> 
               <div className="rounded-lg shadow-md mb-6 cardBox pt-3" id="timetable-container">
                 <h1>Time Table CSE - {timetable[0].faculty_name}</h1>
                 <Table bordered className="mt-4 timetable-table">

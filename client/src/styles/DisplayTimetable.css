@@ -155,3 +155,36 @@ button {
   border: 2px solid black !important; /* Reverted to 2px */
   background-color: #f2f2f2;
 }
+
+@media (max-width: 768px) {
+  .timetable-container {
+    max-width: 100%;
+    margin-top: 20px;
+    box-sizing: border-box;   
+  }
+
+  .timetable-table,
+  .labTimeTable  {
+    width: 100%; 
+    table-layout: auto; 
+  }
+  .timetable-table th,
+  .timetable-table td,
+  .labTimeTable th,
+  .labTimeTable td{
+    min-width: auto; 
+    font-size: 12px;
+  }
+
+  .hide-overflow-within {
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  .small-screen{
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+  }
+}

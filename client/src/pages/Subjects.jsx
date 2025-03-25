@@ -23,8 +23,7 @@ function Subjects() {
             body: JSON.stringify(subject)
         })
         .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data),
+        .then(() => {
             navigate('/admin/subjects')
         })
         .catch(error => console.error('Error:', error));

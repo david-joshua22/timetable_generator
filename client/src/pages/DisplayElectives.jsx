@@ -73,12 +73,10 @@ function DisplayElectives() {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Delete response:', data);
                     return data;
                 });
         }))
         .then(responses => {
-          console.log('All deletion responses:', responses);
           if (responses.every(response => response.completed)) {
               fetchElectives();
               setDeleteIds([]);

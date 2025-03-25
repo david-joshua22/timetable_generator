@@ -143,7 +143,6 @@ const LabTimetable = () => {
           const data = await response.json();
           setTimetable(data);  
           setShowResults(true); // Set showResults after data is fetched
-          console.log(data);
       
         } catch (error) {
           console.error("Fetch error:", error);
@@ -171,7 +170,6 @@ const LabTimetable = () => {
             }));
     
             setClassList(formattedData);
-            console.log('Lab Data:', formattedData);
         } catch (error) {
             console.error("Fetch error:", error);
         }
@@ -182,7 +180,7 @@ const LabTimetable = () => {
         <div className="box-1">
             <div className="box-2">
                 <div className="timetableHeader text-center">
-                    <h3>Display TimeTable</h3>
+                    <h3>Display Lab TimeTable</h3>
                 </div>
     
                 <div className="d-flex justify-content-center">
@@ -208,7 +206,7 @@ const LabTimetable = () => {
                 </div>  
                 {showResults ? (
             timetable.length > 0 ?  (
-          <div> 
+          <div className='hide-overflow-within'> 
               <div className="rounded-lg shadow-md mb-6 cardBox pt-3" id="timetable-container">
               <h1 style={{textTransform: 'uppercase'}}>Time Table - {timetable[0].lab_name}</h1>
                 <Table bordered className="mt-4 timetable-table">

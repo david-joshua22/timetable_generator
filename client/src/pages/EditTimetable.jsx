@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
@@ -153,7 +154,6 @@ const EditTimetable = () => {
         if (!facultyResponse.ok) throw new Error("Failed to fetch faculty");
     
         const facultyData = await facultyResponse.json();
-        console.log(facultyData);
 
         // Handle lab faculty format
         let facultyIds = [];
@@ -189,7 +189,6 @@ const EditTimetable = () => {
             lab_name : facultyData[0].lab_name || null
         });
 
-        console.log(selectedCell);
     };    
 
     const handleCancelAdd = () => {
@@ -223,7 +222,6 @@ const EditTimetable = () => {
             });
     
             if (!response.ok) throw new Error('Failed to add to timetable');
-            console.log("Entry added successfully!");
     
             const deleteResponse = await fetch(`${API_BASE_URL}/removeDeletedEntry`, {
                 method: 'POST',
@@ -240,7 +238,6 @@ const EditTimetable = () => {
             });
     
             if (!deleteResponse.ok) throw new Error('Failed to remove entry from deleted records');
-            console.log("Deleted entry removed from database!");
     
             setDeletedEntries(prevDeletedEntries => prevDeletedEntries.filter(
                 e => !(e.day === entry.day && e.time === entry.time && e.subject_id === entry.subject_id)
@@ -287,7 +284,6 @@ const EditTimetable = () => {
                 lab_name: entry.lab_name || null               // Added lab_name with default
             }));
     
-            console.log("Fetched Deleted Entries:", formattedData);
             setDeletedEntries(formattedData || []);
             return formattedData;
         } catch (error) {
@@ -301,7 +297,6 @@ const EditTimetable = () => {
         if (!selectedCell) return;
     
         try {
-            console.log("Deleting entry:", selectedCell); // Debugging log
             const response = await fetch(`${API_BASE_URL}/editTimetable`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -321,7 +316,6 @@ const EditTimetable = () => {
     
             if (!response.ok) throw new Error('Failed to update timetable');
     
-            console.log("Entry deleted successfully!"); 
             await fetchDeletedEntries(); 
     
             setTimetable(prev => prev.filter(

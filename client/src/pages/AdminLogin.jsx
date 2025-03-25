@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext,useState,useEffect } from "react";
 import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
 import Image from 'react-bootstrap/Image';
 import { FiLogOut } from "react-icons/fi";
@@ -22,6 +22,16 @@ import LabTimetable from "./LabTimetable";
 const AdminDashboard = () => {
   const { setAuthenticated, setRole } = useContext(userContext);
   const navigate = useNavigate();
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -38,59 +48,74 @@ const AdminDashboard = () => {
 
         <nav className="menu">
           <div className="handleOverflow" style={{ width: '100%' }}>
-            {/* Add 'end' to prevent highlighting on subroutes */}          
-            
-            <NavLink to="/admin/faculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaUserPlus className="icon" /> Add Faculty
-            </NavLink>
-
-            <NavLink to="/admin/subjects" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaBook className="icon" /> Add Subjects
-            </NavLink>
-
-            <NavLink to="/admin/addLab" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaFlask className="icon" /> Add Lab
-            </NavLink>
-
-            <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaClipboard className="icon" /> Display Electives
-            </NavLink>
-
-            <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaMapMarkedAlt className="icon" /> Map Faculty-Subject
-            </NavLink>
-
-            <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaCalendarAlt className="icon" /> Generate Timetable
-            </NavLink>
-
-            <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaChalkboardTeacher className="icon" /> Faculty Timetable
-            </NavLink>
-
-            <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaUserMd className="icon" /> Lab Timetable
-            </NavLink>
-
-            <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaEye className="icon" /> View Timetable
-            </NavLink>
-
-
-            <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
-              <FaEdit className="icon" /> Edit Timetable
-            </NavLink>
+            {isSmallScreen ? (
+              <div className="d-flex flex-row">
+                <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaChalkboardTeacher className="icon" />
+                </NavLink>
+                <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaUserMd className="icon" />
+                </NavLink>
+                <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaEye className="icon" />
+                </NavLink>
+              </div>
+            ) : (
+              <>
+                <NavLink to="/admin/faculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaUserPlus className="icon" /> Add Faculty
+                </NavLink>
+  
+                <NavLink to="/admin/subjects" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaBook className="icon" /> Add Subjects
+                </NavLink>
+  
+                <NavLink to="/admin/addLab" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaFlask className="icon" /> Add Lab
+                </NavLink>
+  
+                <NavLink to="/admin/displayElective" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaClipboard className="icon" /> Display Electives
+                </NavLink>
+  
+                <NavLink to="/admin/sfmap" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaMapMarkedAlt className="icon" /> Map Faculty-Subject
+                </NavLink>
+  
+                <NavLink to="/admin/viewMapping" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaCalendarAlt className="icon" /> Generate Timetable
+                </NavLink>
+  
+                <NavLink to="/admin/displayFaculty" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaChalkboardTeacher className="icon" /> Faculty Timetable
+                </NavLink>
+  
+                <NavLink to="/admin/labTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaUserMd className="icon" /> Lab Timetable
+                </NavLink>
+  
+                <NavLink to="/admin/display" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaEye className="icon" /> View Timetable
+                </NavLink>
+  
+  
+                <NavLink to="/admin/editTimetable" className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                  <FaEdit className="icon" /> Edit Timetable
+                </NavLink>
+              </>
+            )}
           </div>
-
+  
         </nav>
 
         {/* Logout Button */}
         <button className="logout" onClick={handleLogout}>
-          <FiLogOut className="icon" /> Logout
+          <FiLogOut className="icon" />
+          {!isSmallScreen && " Logout"}
         </button>
       </div>
 
-      {/* Content Area - Shows the selected page dynamically */}
+
       <div className="content">
         <Routes>
           <Route path="/faculty" element={<Faculty />} />

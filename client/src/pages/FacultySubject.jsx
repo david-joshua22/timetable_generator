@@ -95,8 +95,7 @@ function FacultySubject() {
             body: JSON.stringify(requestBody),
         })
             .then((response) => response.json())
-            .then((data) => {
-                console.log('Success:', data);
+            .then(() => {
                 setRefreshMappings((prev) => !prev);
                 setSelectedValues({
                     subject: '',

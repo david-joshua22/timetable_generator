@@ -69,7 +69,6 @@ function Login() {
             navigate("/displayFaculty");
           }
 
-          console.log("Success:", data);
         } else {
           throw new Error("Login failed! No token received.");
         }

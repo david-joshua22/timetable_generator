@@ -30,9 +30,8 @@ function AFaculty() {
             body: JSON.stringify(faculty)
         })
         .then(response => response.json())
-        .then(data => {
+        .then(() => {
             setLoading(false);
-            console.log(data);
             navigate('/admin/faculty');
         })
         .catch(error => {
