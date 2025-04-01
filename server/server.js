@@ -1109,7 +1109,7 @@ app.post('/getFaculty', (req, res) => {
 
     db.query(query, [section_id, semester_id, subject_id], (err, results) => {
         if (err) {
-            console.error("Error fetching faculty data:", err);
+            console.error("Error fetching faculty data:", err,semester_id,section_id,subject_id);
             return res.status(500).json({ error: "Database query failed" });
         }
 
@@ -1239,7 +1239,6 @@ app.get('/deleteData', async (req, res) => {
 
         ];
 
-        // Execute delete queries sequentially
         for (let query of deleteQueries) {
             await db.query(query, [sem_id]);
         }

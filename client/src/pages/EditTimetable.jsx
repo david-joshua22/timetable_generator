@@ -155,7 +155,6 @@ const EditTimetable = () => {
     
         const facultyData = await facultyResponse.json();
 
-        // Handle lab faculty format
         let facultyIds = [];
         let facultyNames = [];
         if (type === 'Lab') {
@@ -183,7 +182,7 @@ const EditTimetable = () => {
             time,
             subject_id: subject_id,
             faculty_id: facultyIds,
-            faculty_name: facultyNames|| "Unknown",
+            faculty_name: facultyNames,
             subject_name: name,
             subject_type: type,
             lab_name : facultyData[0].lab_name || null
@@ -273,15 +272,14 @@ const EditTimetable = () => {
     
             const data = await response.json();
             
-            // Format the data to handle both array and string faculty information
             const formattedData = data.map(entry => ({
                 ...entry,
                 faculty_id: Array.isArray(entry.faculty_id) ? entry.faculty_id : [entry.faculty_id],
                 faculty_name: Array.isArray(entry.faculty_name) ? 
                     entry.faculty_name.join(', ') : 
                     entry.faculty_name,
-                subject_type: entry.subject_type || null,  // Added subject_type with default
-                lab_name: entry.lab_name || null               // Added lab_name with default
+                subject_type: entry.subject_type || null,  
+                lab_name: entry.lab_name || null           
             }));
     
             setDeletedEntries(formattedData || []);
@@ -397,12 +395,16 @@ const EditTimetable = () => {
                                             const isUnavailable = unavailableCells.some(
                                                 (cell) => cell.day === parseInt(dayKey) && cell.time === periodIndex + 1
                                             );
+                                            
+                                            // Allow cells to be clickable when adding an entry
+                                            const isClickable = isAddingEntry || (subject && (subject.type === 'Lecture' || subject.type === 'Lab'));
+                                            
                                             return (
                                                 <td 
                                                     key={periodIndex} 
-                                                    onClick={() => !isUnavailable && handleCellClick(dayKey, periodIndex + 1)}
+                                                    onClick={() => isClickable && !isUnavailable && handleCellClick(dayKey, periodIndex + 1)}
                                                     className={`clickable-cell ${selectedCell?.day === dayKey && selectedCell?.time === (periodIndex + 1) ? "selected-cell" : ""} ${isUnavailable ? "unavailable-cell" : ""}`}
-                                                    style={{ cursor: editMode && !isUnavailable ? 'pointer' : 'not-allowed', backgroundColor: isUnavailable ? 'lightgray' : 'inherit' }}
+                                                    style={{ cursor: editMode && isClickable && !isUnavailable ? 'pointer' : 'not-allowed', backgroundColor: isUnavailable ? 'lightgray' : 'inherit' }}
                                                 >
                                                     {subject ? (
                                                             subject.name.includes('(') && subject.name.includes(')')
